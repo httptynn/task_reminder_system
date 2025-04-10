@@ -1,87 +1,3 @@
-// import { Button } from '@/components/ui/button'; // Assuming you have a Button component
-// import { UserInfo } from '@/components/user-info'; // Importing the UserInfo component
-// import AppLayout from '@/layouts/app-layout';
-// import { type BreadcrumbItem } from '@/types';
-// import { Head } from '@inertiajs/react';
-// import { ChevronDown, Search, UserRoundMinus, UserRoundPlus } from 'lucide-react'; // Importing Lucide icons
-// import { useState } from 'react'; // Import useState for search functionality
-
-// // Breadcrumbs for the Members page
-// const breadcrumbs: BreadcrumbItem[] = [
-//     {
-//         title: 'Dashboard',
-//         href: '/dashboard',
-//     },
-//     {
-//         title: 'Members',
-//         href: '/members',
-//     },
-// ];
-
-// export default function Members({ members }: { members: any[] }) {
-//     // State for search input
-//     const [searchTerm, setSearchTerm] = useState('');
-
-//     // Filter members based on search term (case-insensitive)
-//     const filteredMembers = members.filter((member) => `${member.name} ${member.email}`.toLowerCase().includes(searchTerm.toLowerCase()));
-
-//     return (
-//         <AppLayout breadcrumbs={breadcrumbs}>
-//             <Head title="Members" />
-//             <div className="flex h-full flex-1 flex-col gap-5 rounded-xl p-4">
-//                 {/* Header Section */}
-//                 <div className="flex items-center justify-between">
-//                     <h1 className="text-xl font-semibold">Select Member Access</h1>
-//                     <div className="flex items-center gap-2">
-//                         <span className="text-muted-foreground text-sm">{filteredMembers.length} members</span>
-//                         <div className="relative">
-//                             <input
-//                                 type="text"
-//                                 placeholder="Search"
-//                                 className="rounded-md border border-gray-500 py-1 pr-2 pl-8 text-sm"
-//                                 value={searchTerm}
-//                                 onChange={(e) => setSearchTerm(e.target.value)} // Update search term on input change
-//                             />
-//                             <Search className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-//                         </div>
-//                         <Button className="flex items-center gap-1 bg-blue-600 text-white hover:bg-blue-700">
-//                             <UserRoundPlus className="h-4 w-4" />
-//                             Add member
-//                         </Button>
-//                     </div>
-//                 </div>
-
-//                 {/* Members List */}
-//                 <div className="flex-1">
-//                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-//                         {filteredMembers.length > 0 ? (
-//                             filteredMembers.map((member) => (
-//                                 <div key={member.id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800">
-//                                     {/* User Info (Avatar, Name, Email) */}
-//                                     <div className="flex items-center gap-3">
-//                                         <UserInfo user={member} showEmail={true} />
-//                                     </div>
-
-//                                     {/* Role and Actions */}
-//                                     <div className="flex items-center gap-2">
-//                                         <Button variant="outline" size="sm" className="flex items-center gap-1 hover:bg-white dark:hover:bg-[#080b0e]">
-//                                             {member.role.charAt(0).toUpperCase() + member.role.slice(1)} <ChevronDown className="h-4 w-4" />
-//                                         </Button>
-//                                         <Button variant="destructive" size="sm" className="hover:bg-red-700">
-//                                             <UserRoundMinus className="text-white-foreground dark:text-white h-4 w-4" />
-//                                         </Button>
-//                                     </div>
-//                                 </div>
-//                             ))
-//                         ) : (
-//                             <div className="text-muted-foreground p-4 text-center">No members found matching your search.</div>
-//                         )}
-//                     </div>
-//                 </div>
-//             </div>
-//         </AppLayout>
-//     );
-// }
 
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
@@ -103,10 +19,6 @@ import {
 
 
 const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Dashboard',
-    href: '/dashboard',
-  },
   {
     title: 'Members',
     href: '/members',
@@ -285,3 +197,4 @@ export default function Members({ members: initialMembers }: { members: any[] })
     </AppLayout>
   );
 }
+

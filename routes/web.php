@@ -17,6 +17,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $members = User::all(); // Fetch all users
         return Inertia::render('members', ['members' => $members]);
     })->middleware('role:admin')->name('members');
+
+    Route::get('calendar', function () {
+        return Inertia::render('calendar'); // Note: Use 'Calendar' (capitalized, no .tsx extension)
+    })->name('calendar');
+
 });
 
 
