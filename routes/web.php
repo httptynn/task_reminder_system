@@ -22,6 +22,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('calendar'); // Note: Use 'Calendar' (capitalized, no .tsx extension)
     })->name('calendar');
 
+    Route::get('notifications', function () {
+        $notifications = User::all();
+        return Inertia::render('notifications', ['notifications' => $notifications]);
+    })->middleware('role:admin')->name('notifications');
+
 });
 
 
