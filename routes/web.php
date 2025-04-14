@@ -27,6 +27,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('notifications', ['notifications' => $notifications]);
     })->middleware('role:admin')->name('notifications');
 
+    Route::get('assignee', function () {
+        return Inertia::render('assignee');
+    })->name('assignee');
+
 });
 
 

@@ -420,11 +420,11 @@ export default function Calendar() {
                         <div className="flex items-center justify-between">
                             <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
 
-                                Calendar Schedule
+                                Task Deadline
                             </h1>
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white flex items-center">
+                                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center">
                                         <Plus className="-mr-1 h-5 w-5" />
                                         Create Schedule
                                     </Button>

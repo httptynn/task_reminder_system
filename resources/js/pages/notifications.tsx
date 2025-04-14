@@ -89,7 +89,7 @@ export default function Notifications({ notifications: initialNotifications = mo
       <div className="flex h-full flex-1 flex-col gap-5 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold flex items-center gap-2">
-            <Bell className="h-5 w-5" /> Admin Notifications
+            Updates
           </h1>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm mr-2">{filteredNotifications.length} notifications</span>

@@ -157,3 +157,130 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer components {
+    /* Calendar styles (unchanged) */
+    .react-calendar {
+      @apply rounded-md border border-border bg-background text-foreground;
+      padding: 0.5rem;
+    }
+    .react-calendar__tile {
+      @apply text-foreground;
+    }
+    .react-calendar__tile--active {
+      @apply bg-primary text-primary-foreground;
+    }
+    .react-calendar__tile--now {
+      @apply bg-muted;
+    }
+    .react-calendar__navigation button {
+      @apply text-foreground hover:bg-muted;
+    }
+  
+    /* DatePicker and TimePicker wrapper styles */
+    .react-date-picker__wrapper,
+    .react-time-picker__wrapper {
+      position: relative;
+      border-color: var(--color-input);
+      border-width: 1px;
+      border-radius: var(--radius-md);
+      background: transparent;
+      padding: 0.25rem 0.75rem;
+    }
+  
+    /* Ensure all text in the date and time pickers is readable */
+    .react-date-picker__inputGroup input,
+    .react-time-picker__inputGroup input,
+    .react-time-picker__inputGroup select {
+      color: var(--color-foreground);
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 0;
+    }
+  
+    /* Placeholder styles */
+    .react-date-picker__inputGroup input::placeholder,
+    .react-time-picker__inputGroup input::placeholder {
+      color: var(--color-muted-foreground);
+    }
+  
+    /* Clock popup styles */
+    .react-time-picker__clock {
+      @apply rounded-md border border-border bg-background text-foreground;
+      padding: 0.5rem;
+    }
+  
+    /* Clock face background */
+    .react-time-picker__clock .react-clock__face {
+      background: var(--color-background);
+    }
+  
+    /* Clock hands and marks */
+    .react-time-picker__clock .react-clock__mark__body,
+    .react-time-picker__clock .react-clock__hand__body {
+      background: var(--color-foreground);
+    }
+  
+    /* Clock numbers (hour/minute markers) */
+    .react-time-picker__clock .react-clock__hour-mark__number,
+    .react-time-picker__clock .react-clock__minute-mark__number {
+      color: var(--color-foreground);
+      font-size: 12px; /* Ensure numbers are visible */
+    }
+  
+    /* Dark mode styles for date and time picker */
+    .dark .react-date-picker__wrapper,
+    .dark .react-time-picker__wrapper {
+      
+      border-color: #4b5563;
+    }
+  
+    .dark .react-date-picker__inputGroup input,
+    .dark .react-time-picker__inputGroup input,
+    .dark .react-time-picker__inputGroup select {
+      color: #ffffff;
+    }
+  
+    .dark .react-time-picker__inputGroup__amPm {
+      color: #ffffff;
+    }
+  
+    /* Dark mode styles for clock popup */
+    .dark .react-time-picker__clock {
+      background: #1f2937;
+      border-color: #4b5563;
+    }
+  
+    .dark .react-time-picker__clock .react-clock__face {
+      background: #1f2937;
+    }
+  
+    .dark .react-time-picker__clock .react-clock__mark__body,
+    .dark .react-time-picker__clock .react-clock__hand__body {
+      background: #ffffff; /* White hands and marks for contrast */
+    }
+  
+    .dark .react-time-picker__clock .react-clock__hour-mark__number,
+    .dark .react-time-picker__clock .react-clock__minute-mark__number {
+      color: #ffffff; /* White numbers for visibility */
+    }
+  
+    /* Dark mode for calendar */
+    /* .dark .react-calendar {
+      background: #1f2937;
+      color: #ffffff;
+    }
+    .dark .react-calendar__tile {
+      color: #ffffff;
+    }
+    .dark .react-calendar__tile--active {
+      background: #3b82f6;
+      color: #ffffff;
+    }
+    .dark .react-calendar__tile--now {
+      background: #4b5563;
+      color: #ffffff;
+    } */
+  }
+

@@ -78,7 +78,7 @@ export default function Members({ members: initialMembers }: { members: any[] })
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="flex items-center gap-1 ml-2 bg-blue-600 text-white hover:bg-blue-700">
+                <Button className="flex items-center gap-1 ml-2 bg-primary text-primary-foreground hover:bg-primary/90">
                   <UserRoundPlus className="h-4 w-4" />
                   Add member
                 </Button>
