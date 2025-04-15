@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\User;
+use App\Http\Controllers\MemberController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -13,10 +14,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('members', function () {
-        $members = User::all(); // Fetch all users
-        return Inertia::render('members', ['members' => $members]);
-    })->middleware('role:admin')->name('members');
+    Route::get('/members', [MemberController::class, 'index'])->middleware('role:admin')->name('members');
+    Route::post('/members', [MemberController::class, 'store'])->middleware('role:admin')->name('members.store');
+    Route::patch('/members/{user}', [MemberController::class, 'update'])->middleware('role:admin')->name('members.update');
+    Route::delete('/members/{user}', [MemberController::class, 'destroy'])->middleware('role:admin')->name('members.destroy');
+
+    
 
     Route::get('calendar', function () {
         return Inertia::render('calendar'); // Note: Use 'Calendar' (capitalized, no .tsx extension)

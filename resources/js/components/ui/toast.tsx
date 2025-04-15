@@ -27,7 +27,7 @@ export function Toast({
   if (!isVisible) return null;
 
   const variantStyles = {
-    default: 'bg-gray-800 text-white',
+    default: 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-800',
     success: 'bg-green-600 text-white',
     error: 'bg-red-600 text-white',
   };
