@@ -17,6 +17,7 @@ interface MembersTableProps {
   onSelectMember: (id: number) => void;
   onSelectAll: (checked: boolean) => void;
   selectedMembers: number[];
+  onEditMember: (member: Member) => void;
 }
 
 export function MembersTable({
@@ -26,6 +27,7 @@ export function MembersTable({
   onSelectMember,
   onSelectAll,
   selectedMembers,
+  onEditMember,
 }: MembersTableProps) {
   return (
     <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -48,7 +50,13 @@ export function MembersTable({
           >
             <Checkbox
               checked={selectedMembers.includes(member.id)}
-              onCheckedChange={() => onSelectMember(member.id)}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  onRemoveMember(member.id); // Trigger dialog for deletion
+                } else {
+                  onSelectMember(member.id); // Toggle selection for batch
+                }
+              }}
             />
             <div className="flex-1 pl-4 text-sm">{member.name}</div>
             <div className="flex-1 text-sm underline">{member.email}</div>
@@ -67,8 +75,13 @@ export function MembersTable({
               {member.role === 'user' ? 'Member' : 'Admin'}
             </div>
             <div className="w-20">
-              <Button variant="ghost" size="sm" className="hover:bg-transparent">
-                <UserRoundPen className=" text-chart-2" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hover:bg-transparent"
+                onClick={() => onEditMember(member)}
+              >
+                <UserRoundPen className="h-4 w-4 text-chart-2" />
               </Button>
             </div>
           </div>
