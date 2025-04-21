@@ -66,6 +66,7 @@
 //     }
 // }
 
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -76,20 +77,32 @@ use Illuminate\Support\Facades\Redirect;
 
 class MemberController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $members = User::all()->map(function ($user) {
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'status' => $user->status ?? 'active',
-                'role' => $user->role ?? 'user',
-            ];
-        });
+        $perPage = $request->input('per_page', 8); 
+        $search = $request->query('search');
+
+        $members = User::query()
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->whereIn('role', ['user', 'admin'])
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'status' => $user->status ?? 'enabled',
+                    'role' => $user->role ?? 'user',
+                ];
+            });
 
         return Inertia::render('members', [
             'members' => $members,
+            'search' => $search, 
         ]);
     }
 
@@ -99,7 +112,7 @@ class MemberController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'role' => 'required|in:user,admin',
-            'status' => 'required|in:active,deactivated',
+            'status' => 'required|in:enabled,disabled',
         ]);
 
         User::create([
@@ -113,27 +126,42 @@ class MemberController extends Controller
         return Redirect::route('members')->with('success', 'Member added successfully.');
     }
 
-    public function edit(User $user)
+    public function edit(Request $request, User $user)
     {
+        $perPage = $request->input('per_page', 10);
+        $search = $request->query('search');
+    
+        $members = User::query()
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->whereIn('role', ['user', 'admin'])
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'status' => $user->status ?? 'enabled',
+                    'role' => $user->role ?? 'user',
+                ];
+            });
+    
         return Inertia::render('members', [
             'editMember' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role ?? 'user',
-                'status' => $user->status ?? 'active',
+                'status' => $user->status ?? 'enabled',
             ],
-            'members' => User::all()->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'status' => $user->status ?? 'active',
-                    'role' => $user->role ?? 'user',
-                ];
-            }),
+            'members' => $members,
+            'search' => $search,
         ]);
     }
+
 
     public function update(Request $request, User $user)
     {
@@ -141,7 +169,7 @@ class MemberController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:user,admin',
-            'status' => 'required|in:active,deactivated',
+            'status' => 'required|in:enabled,disabled',
         ]);
 
         $user->update($validated);
@@ -154,4 +182,5 @@ class MemberController extends Controller
         $user->delete();
         return Redirect::route('members')->with('success', 'Member deleted successfully.');
     }
+
 }

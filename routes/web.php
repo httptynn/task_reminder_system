@@ -19,8 +19,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/members/{user}', [MemberController::class, 'update'])->middleware('role:admin')->name('members.update');
     Route::delete('/members/{user}', [MemberController::class, 'destroy'])->middleware('role:admin')->name('members.destroy');
 
-    
-
     Route::get('calendar', function () {
         return Inertia::render('calendar'); // Note: Use 'Calendar' (capitalized, no .tsx extension)
     })->name('calendar');
