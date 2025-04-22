@@ -22,6 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Member extends User {
     status: 'enabled' | 'disabled';
     role: 'user' | 'admin';
+    disable_reason?: string | null; // Add disable_reason
 }
 
 interface PageProps {
@@ -38,6 +39,7 @@ interface PageProps {
     };
     editMember?: Member;
     search?: string;
+    statusReasons?: string[];
     [key: string]: any;
 }
 
@@ -45,10 +47,12 @@ export default function Members({
     members: initialMembers,
     editMember,
     search,
+    statusReasons = [],
 }: {
     members: PageProps['members'];
     editMember?: Member;
     search?: string;
+    statusReasons?: string[];
 }) {
     const { flash } = usePage<PageProps>().props;
     const [searchTerm, setSearchTerm] = useState<string>(search || '');
@@ -209,22 +213,28 @@ export default function Members({
         if (!statusChange) return;
         router.patch(
             `/members/${statusChange.id}`,
-            { status: statusChange.newStatus },
+            {
+                status: statusChange.newStatus,
+                ...(statusChange.newStatus === 'disabled' && statusChange.reason ? { reason: statusChange.reason } : {}),
+            },
             {
                 onSuccess: () => {
                     setToast({
                         message: `Member ${statusChange.newStatus === 'enabled' ? 'enabled' : 'disabled'} successfully!`,
                         variant: 'success',
                     });
+                    setIsStatusDialogOpen(false);
+                    setStatusChange(null);
                 },
                 onError: (errors) => {
-                    console.error('Error updating member status:', errors);
-                    setToast({ message: 'Failed to update member status.', variant: 'error' });
+                    console.error('Status update failed:', errors);
+                    setToast({
+                        message: 'Failed to update member status: ' + (errors.status || 'Validation error'),
+                        variant: 'error',
+                    });
                 },
             },
         );
-        setIsStatusDialogOpen(false);
-        setStatusChange(null);
     };
 
     const handleEditClick = (member: Member) => {
@@ -338,37 +348,7 @@ export default function Members({
                             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                                 Cancel
                             </Button>
-                            <Button onClick={handleAddMember} className="bg-blue-500 hover:bg-blue-600">
-                                Add
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-                <Dialog
-                    open={isSingleDeleteDialogOpen}
-                    onOpenChange={(open) => {
-                        setIsSingleDeleteDialogOpen(open);
-                        if (!open) setDeletingMemberId(null);
-                    }}
-                >
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Confirm Deletion</DialogTitle>
-                            <DialogDescription>Are you sure you want to delete this member? This action cannot be undone.</DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    setIsSingleDeleteDialogOpen(false);
-                                    setDeletingMemberId(null);
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button onClick={confirmSingleDelete} variant="destructive">
-                                Delete
-                            </Button>
+                            <Button onClick={handleAddMember}>Add</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -430,6 +410,34 @@ export default function Members({
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+                <Dialog
+                    open={isSingleDeleteDialogOpen}
+                    onOpenChange={(open) => {
+                        setIsSingleDeleteDialogOpen(open);
+                        if (!open) setDeletingMemberId(null);
+                    }}
+                >
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirm Deletion</DialogTitle>
+                            <DialogDescription>Are you sure you want to delete this member? This action cannot be undone.</DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setIsSingleDeleteDialogOpen(false);
+                                    setDeletingMemberId(null);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button onClick={confirmSingleDelete} variant="destructive">
+                                Delete
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
                 <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
@@ -441,18 +449,30 @@ export default function Members({
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-4">
-                            <Select onValueChange={(value) => setStatusChange({ ...statusChange!, reason: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a reason (optional)" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="leave">Member is on leave</SelectItem>
-                                    <SelectItem value="security">Security concern</SelectItem>
-                                    <SelectItem value="offboarding">Offboarding</SelectItem>
-                                    <SelectItem value="transition">Role/project transition</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            {statusChange?.newStatus === 'enabled' ? (
+                                <Input
+                                    type="text"
+                                    value={initialMembers.data.find((m) => m.id === statusChange.id)?.disable_reason || 'No reason provided'}
+                                    disabled
+                                    className="cursor-not-allowed opacity-70"
+                                />
+                            ) : (
+                                <Select
+                                    onValueChange={(value) => setStatusChange({ ...statusChange!, reason: value })}
+                                    value={statusChange?.reason || ''}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a reason (optional)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {statusReasons.map((reason) => (
+                                            <SelectItem key={reason} value={reason}>
+                                                {reason}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>

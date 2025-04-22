@@ -1,72 +1,5 @@
 <?php
 
-// namespace App\Http\Controllers;
-
-// use App\Models\User;
-// use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\Hash;
-// use Inertia\Inertia;
-// use Illuminate\Support\Facades\Redirect;
-
-// class MemberController extends Controller
-// {
-//     public function index()
-//     {
-//         $members = User::all()->map(function ($user) {
-//             return [
-//                 'id' => $user->id,
-//                 'name' => $user->name,
-//                 'email' => $user->email,
-//                 'status' => $user->status ?? 'active',
-//                 'role' => $user->role ?? 'user',
-//             ];
-//         });
-
-//         return Inertia::render('members', [
-//             'members' => $members,
-//         ]);
-//     }
-
-//     public function store(Request $request)
-//     {
-//         $validated = $request->validate([
-//             'name' => 'required|string|max:255',
-//             'email' => 'required|email|unique:users,email',
-//             'role' => 'required|in:user,admin',
-//             'status' => 'required|in:active,deactivated',
-//         ]);
-
-//         User::create([
-//             'name' => $validated['name'],
-//             'email' => $validated['email'],
-//             'password' => Hash::make('temporary-password'),
-//             'role' => $validated['role'],
-//             'status' => $validated['status'],
-//         ]);
-
-//         return Redirect::route('members')->with('success', 'Member added successfully.');
-//     }
-
-//     public function update(Request $request, User $user)
-//     {
-//         $validated = $request->validate([
-//             'status' => 'sometimes|in:active,deactivated',
-//             'role' => 'sometimes|in:user,admin',
-//         ]);
-
-//         $user->update($validated);
-
-//         return Redirect::route('members')->with('success', 'Member updated successfully.');
-//     }
-
-//     public function destroy(User $user)
-//     {
-//         $user->delete();
-//         return Redirect::route('members')->with('success', 'Member deleted successfully.');
-//     }
-// }
-
-
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -79,7 +12,7 @@ class MemberController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 8); 
+        $perPage = $request->input('per_page', 8);
         $search = $request->query('search');
 
         $members = User::query()
@@ -91,90 +24,151 @@ class MemberController extends Controller
             ->paginate($perPage)
             ->withQueryString()
             ->through(function ($user) {
+                $latestReason = $user->status === 'disabled'
+                    ? \App\Models\StatusLog::where('user_id', $user->id)
+                        ->where('status', 'disabled')
+                        ->orderBy('changed_at', 'desc')
+                        ->value('reason')
+                    : null;
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'status' => $user->status ?? 'enabled',
                     'role' => $user->role ?? 'user',
+                    'disable_reason' => $latestReason,
                 ];
             });
 
+        // Define static reasons
+        $staticReasons = [
+            'leave' => 'Member is on leave',
+            'security' => 'Security concern',
+            'offboarding' => 'Offboarding',
+            'transition' => 'Role/project transition',
+            'other' => 'Other',
+        ];
+
+        // Fetch custom reasons from status_logs
+        $customReasons = \App\Models\StatusLog::whereNotNull('reason')
+            ->distinct()
+            ->pluck('reason')
+            ->toArray();
+
+        // Combine static and custom reasons, ensuring no duplicates
+        $statusReasons = array_unique(array_merge(array_values($staticReasons), $customReasons));
+
         return Inertia::render('members', [
             'members' => $members,
-            'search' => $search, 
+            'search' => $search,
+            'statusReasons' => $statusReasons,
         ]);
     }
 
     public function store(Request $request)
     {
+        // Validate the request
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email|max:255|unique:users,email',
             'role' => 'required|in:user,admin',
             'status' => 'required|in:enabled,disabled',
         ]);
 
-        User::create([
+        // Create the new user
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make('temporary-password'),
             'role' => $validated['role'],
             'status' => $validated['status'],
+            'password' => Hash::make('default_password'), // Set a default password or generate a random one
         ]);
 
-        return Redirect::route('members')->with('success', 'Member added successfully.');
-    }
+        // If status is disabled, log the reason (if provided)
+        if ($validated['status'] === 'disabled' && $request->has('reason')) {
+            $reason = $request->input('reason');
+            $reasonMap = [
+                'leave' => 'Member is on leave',
+                'security' => 'Security concern',
+                'offboarding' => 'Offboarding',
+                'transition' => 'Role/project transition',
+                'other' => 'Other',
+            ];
+            $reason = $reasonMap[$reason] ?? $reason;
 
-    public function edit(Request $request, User $user)
-    {
-        $perPage = $request->input('per_page', 10);
-        $search = $request->query('search');
-    
-        $members = User::query()
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->whereIn('role', ['user', 'admin'])
-            ->paginate($perPage)
-            ->withQueryString()
-            ->through(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'status' => $user->status ?? 'enabled',
-                    'role' => $user->role ?? 'user',
-                ];
-            });
-    
-        return Inertia::render('members', [
-            'editMember' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role ?? 'user',
-                'status' => $user->status ?? 'enabled',
-            ],
-            'members' => $members,
-            'search' => $search,
-        ]);
-    }
+            \App\Models\StatusLog::create([
+                'user_id' => $user->id,
+                'status' => $validated['status'],
+                'reason' => $reason,
+                'changed_at' => now(),
+            ]);
+        }
 
+        return redirect()->route('members')->with('success', 'Member added successfully!');
+    }
 
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:user,admin',
-            'status' => 'required|in:enabled,disabled',
-        ]);
+        // Validate based on request context
+        $rules = [];
 
-        $user->update($validated);
+        if ($request->has('name') || $request->has('email') || $request->has('role')) {
+            // Full update (edit member)
+            $rules = [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+                'role' => 'required|in:user,admin',
+            ];
+        }
 
-        return Redirect::route('members')->with('success', 'Member updated successfully.');
+        if ($request->has('status')) {
+            // Status update
+            $rules['status'] = 'required|in:enabled,disabled';
+            $rules['reason'] = 'nullable|string|max:255'; // Optional reason
+        }
+
+        $validated = $request->validate($rules);
+
+        // Map static reason values to full text for status_logs
+        $reason = isset($validated['reason']) ? $validated['reason'] : null;
+        if ($reason) {
+            $reasonMap = [
+                'leave' => 'Member is on leave',
+                'security' => 'Security concern',
+                'offboarding' => 'Offboarding',
+                'transition' => 'Role/project transition',
+                'other' => 'Other',
+            ];
+            $reason = $reasonMap[$reason] ?? $reason; // Use mapped text or keep full text from statusReasons
+        }
+
+        // Update only provided fields
+        if (isset($validated['name'])) {
+            $user->name = $validated['name'];
+        }
+        if (isset($validated['email'])) {
+            $user->email = $validated['email'];
+        }
+        if (isset($validated['status'])) {
+            $user->status = $validated['status']; // Use status ENUM column
+        }
+        if (isset($validated['role'])) {
+            $user->role = $validated['role']; // Direct role update
+        }
+        if ($reason) {
+            // Store reason in status_logs table
+            \App\Models\StatusLog::create([
+                'user_id' => $user->id,
+                'status' => $validated['status'],
+                'reason' => $reason,
+                'changed_at' => now(),
+            ]);
+        }
+
+        $user->save();
+
+        return redirect()->route('members')->with('success', 'Member updated successfully!');
     }
 
     public function destroy(User $user)
@@ -182,5 +176,4 @@ class MemberController extends Controller
         $user->delete();
         return Redirect::route('members')->with('success', 'Member deleted successfully.');
     }
-
 }
