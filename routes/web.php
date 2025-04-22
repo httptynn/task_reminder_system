@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\User;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -23,10 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('calendar'); // Note: Use 'Calendar' (capitalized, no .tsx extension)
     })->name('calendar');
 
-    Route::get('notifications', function () {
-        $notifications = User::all();
-        return Inertia::render('notifications', ['notifications' => $notifications]);
-    })->middleware('role:admin')->name('notifications');
+    Route::get('notifications', [NotificationController::class, 'index'])->middleware('role:admin')->name('notifications');
+    Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->middleware('role:admin')->name('notifications.markAllRead');
+    Route::post('notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->middleware('role:admin')->name('notifications.markAsRead');
 
     Route::get('assignee', function () {
         return Inertia::render('assignee');

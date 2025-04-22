@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, UsersRound, Calendar, Bell, UserRoundPlusIcon} from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, UsersRound, Calendar, Bell, UserRoundPlusIcon, User, UserRound} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -14,9 +14,28 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
 
+    
+    {
+        title: 'Assignee',
+        href: '/assignee',
+        icon: UserRoundPlusIcon,
+    },
+
+    {
+        title: 'Projects',
+        href: '/projects',
+        icon: Folder,
+    },
+
     {
         title: 'Members',
         href: '/members',
+        icon: UserRound,
+    },
+
+    {
+        title: 'Teams',
+        href: '/teams',
         icon: UsersRound,
     },
 
@@ -32,11 +51,6 @@ const mainNavItems: NavItem[] = [
         icon: Bell,
     },
 
-    {
-        title: 'Assignee',
-        href: '/assignee',
-        icon: UserRoundPlusIcon,
-    },
 
 ];
 
