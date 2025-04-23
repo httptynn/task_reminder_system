@@ -32,8 +32,8 @@ export function MembersTable({
 }: MembersTableProps) {
   return (
     <div className="flex flex-col">
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
-        <div className="flex items-center px-4 py-3 font-medium text-sm uppercase text-[#1E1E1E] dark:text-[#FEFEFE] bg-white dark:bg-gray-800">
+      <div className="divide-y divide-gray-200">
+        <div className="flex items-center px-4 py-3 font-medium text-sm uppercase text-[#1E1E1E] bg-blue-200">
           <div className="flex-1 pl-4">Name</div>
           <div className="flex-1">Email</div>
           <div className="flex-1 relative group">Status</div>

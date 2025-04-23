@@ -95,7 +95,7 @@ export function FileUpload({ onFileSelect, className }: FileUploadProps) {
           {/* Upload Button */}
           <Button
             onClick={handleUploadClick}
-            className="bg-blue-600 text-white hover:bg-blue-700"
+            className="bg-chart-2 text-white hover:bg-chart-2/90"
           >
             Upload file
           </Button>

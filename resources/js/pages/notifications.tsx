@@ -176,7 +176,7 @@ export default function Notifications({ notifications: initialNotifications }: P
                     <div className="flex items-center gap-4">
                         <span className="text-muted-foreground text-sm">{initialNotifications.total} notifications</span>
                         <Select value={sort} onValueChange={(value) => handleSortChange(value as 'newest' | 'oldest')}>
-                            <SelectTrigger className="w-[120px] border-gray-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                            <SelectTrigger className="w-[120px] border-blue-950/90 focus:ring-2 focus:ring-blue-950 focus:ring-offset-1">
                                 <SelectValue placeholder="Sort by" />
                             </SelectTrigger>
                             <SelectContent>
@@ -193,7 +193,7 @@ export default function Notifications({ notifications: initialNotifications }: P
                         variant={filter === 'all' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handleFilterChange('all')}
-                        className={filter === 'all' ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}
+                        className={filter === 'all' ? 'bg-chart-2 text-white hover:bg-chart-2/90' : ''}
                     >
                         All ({initialNotifications.total})
                     </Button>
@@ -201,7 +201,7 @@ export default function Notifications({ notifications: initialNotifications }: P
                         variant={filter === 'unread' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handleFilterChange('unread')}
-                        className={filter === 'unread' ? 'bg-blue-500 text-white hover:bg-blue-600' : ''}
+                        className={filter === 'unread' ? 'bg-chart-2 text-white hover:bg-chart-2/90' : ''}
                     >
                         Unread ({notifications.filter((n) => !n.read).length})
                     </Button>

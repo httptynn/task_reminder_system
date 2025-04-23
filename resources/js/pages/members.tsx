@@ -276,7 +276,7 @@ export default function Members({
                             <Search className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         </div>
                         <Button
-                            className="flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
+                            className="flex items-center gap-2 bg-blue-950 text-white hover:bg-blue-900 hover:text-white"
                             onClick={() => {
                                 setFormData({ name: '', email: '', role: 'user', status: 'enabled' });
                                 setErrors({});
