@@ -1,50 +1,32 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, UsersRound, Calendar, Bell, UserRoundPlusIcon} from 'lucide-react';
+import { BellDot, BellDotIcon, Calendar, List, UsersRound } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Task',
         href: '/dashboard',
-        icon: LayoutGrid,
+        icon: List,
     },
-
     {
-        title: 'Members',
+        title: 'Notification',
         href: '/members',
-        icon: UsersRound,
+        icon: BellDot,
     },
-
     {
         title: 'Calendar',
         href: '/calendar',
         icon: Calendar,
     },
-
-    {
-        title: 'Notifications',
-        href: '/notifications',
-        icon: Bell,
-    },
-
-    {
-        title: 'Assignee',
-        href: '/assignee',
-        icon: UserRoundPlusIcon,
-    },
-
 ];
-
-
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="sidebar">
+        <Sidebar collapsible="icon" variant="sidebar" className="bg-[#F4F5FF]">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -62,7 +44,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-               
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
