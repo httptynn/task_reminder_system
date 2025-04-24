@@ -41,3 +41,24 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface User {
+    id: number;
+    profilePhoto?: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    role: string;
+    description: string;
+}
+
+export type BreadcrumbItem = {
+    title: string;
+    href: string;
+};
+
+interface BreadcrumbItem {
+    title: string;
+    href: string | null;
+}
+

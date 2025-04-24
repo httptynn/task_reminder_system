@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -19,7 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->middleware('role:admin')->name('members');
 
     Route::get('calendar', function () {
-        return Inertia::render('calendar'); // Note: Use 'Calendar' (capitalized, no .tsx extension)
+        return Inertia::render('calendar');
     })->name('calendar');
 
     Route::get('notifications', function () {
@@ -31,8 +33,69 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('assignee');
     })->name('assignee');
 
-});
+    Route::get('user/profile', function () {
+        $user = auth()->user();
+        return Inertia::render('UserProfile', [
+            'auth' => [
+                'user' => [
+                    'avatar' => $user->avatar ? Storage::url($user->avatar) : null,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'role' => $user->role,
+                    'description' => $user->description,
+                ],
+            ],
+        ]);
+    })->name('user.profile');
 
+    Route::get('user/profile/edit', function () {
+        $user = auth()->user();
+        return Inertia::render('UserProfileEdit', [
+            'auth' => [
+                'user' => [
+                    'avatar' => $user->avatar ? Storage::url($user->avatar) : null,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'role' => $user->role,
+                    'description' => $user->description,
+                ],
+            ],
+        ]);
+    })->name('user.profile.edit');
+
+    Route::post('user/profile', function (Request $request) {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'avatar' => ['nullable', 'file', 'mimetypes:image/*', 'max:2048'], // 2MB max, any image type
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'role' => ['required', 'in:user,admin,manager'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        // Handle avatar upload
+        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+            // Delete old avatar if it exists
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            // Store new avatar
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = $path;
+        } else {
+            // Preserve existing avatar if no new file is uploaded
+            $validated['avatar'] = $user->avatar;
+        }
+
+        $user->update($validated);
+
+        return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
+    })->name('user.profile.update');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
