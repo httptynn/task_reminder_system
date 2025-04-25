@@ -54,9 +54,7 @@ export default function UserProfile() {
                             {[
                                 { label: 'Full Name', value: auth.user.name },
                                 { label: 'Email', value: auth.user.email },
-                                { label: 'Phone Number', value: auth.user.phone ?? 'Not provided' },
                                 { label: 'Role', value: auth.user.role },
-                                { label: 'Description', value: auth.user.description ?? 'No description provided' },
                             ].map(({ label, value }, idx) => (
                                 <div key={idx} className="border-b border-neutral-200 pb-4 dark:border-neutral-700">
                                     <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{label}</h2>
@@ -84,4 +82,3 @@ export default function UserProfile() {
         </AppLayout>
     );
 }
-

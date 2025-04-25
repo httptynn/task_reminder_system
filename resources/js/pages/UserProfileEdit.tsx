@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -44,9 +43,7 @@ export default function UserProfileEdit() {
         avatar: null as File | null,
         name: auth.user.name,
         email: auth.user.email,
-        phone: auth.user.phone || '',
         role: auth.user.role,
-        description: auth.user.description || '',
     });
 
     const [preview, setPreview] = useState<string | null>(auth.user.avatar || null);
@@ -85,7 +82,7 @@ export default function UserProfileEdit() {
                 <div className="border-sidebar-border/70 dark:border-sidebar-border flex min-h-[60vh] items-center justify-center rounded-xl border bg-white p-8 shadow-xl dark:bg-neutral-900">
                     <div className="flex max-w-2xl flex-col items-center gap-8 text-center">
                         <div
-                            className="group hover:ring-[#036BFF] relative cursor-pointer rounded-full ring-offset-2 transition-all hover:ring-4"
+                            className="group relative cursor-pointer rounded-full ring-offset-2 transition-all hover:ring-4 hover:ring-[#036BFF]"
                             onClick={handleAvatarClick}
                             role="button"
                             aria-label="Change profile picture"
@@ -96,7 +93,7 @@ export default function UserProfileEdit() {
                                     {getInitials(auth.user.name)}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="bg-[#036BFF] absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-md transition-all duration-200 ease-in-out group-hover:scale-110">
+                            <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full bg-[#036BFF] text-white shadow-md transition-all duration-200 ease-in-out group-hover:scale-110">
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path
                                         strokeLinecap="round"
@@ -143,22 +140,6 @@ export default function UserProfileEdit() {
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
-                                <Label htmlFor="phone" className="w-28 pt-2 text-right">
-                                    Phone Number
-                                </Label>
-                                <div className="flex-1">
-                                    <Input
-                                        id="phone"
-                                        type="tel"
-                                        value={data.phone}
-                                        onChange={(e) => setData('phone', e.target.value)}
-                                        className="w-full rounded-md border-2 border-neutral-300 bg-white p-3 text-base shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-                                        placeholder="Optional"
-                                    />
-                                    {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4">
                                 <Label htmlFor="role" className="w-28 pt-2 text-right">
                                     Role
                                 </Label>
@@ -176,22 +157,6 @@ export default function UserProfileEdit() {
                                     {errors.role && <p className="mt-1 text-xs text-red-500">{errors.role}</p>}
                                 </div>
                             </div>
-                            <div className="flex items-start gap-4">
-                                <Label htmlFor="description" className="w-28 pt-2 text-right">
-                                    Description
-                                </Label>
-                                <div className="flex-1">
-                                    <Textarea
-                                        id="description"
-                                        value={data.description}
-                                        onChange={(e) => setData('description', e.target.value)}
-                                        className="w-full rounded-md border-2 border-neutral-300 bg-white p-3 text-base shadow-sm dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
-                                        placeholder="Optional"
-                                        rows={4}
-                                    />
-                                    {errors.description && <p className="mt-1 text-xs text-red-500">{errors.description}</p>}
-                                </div>
-                            </div>
                             <div className="flex justify-center gap-4">
                                 <Link href="/user/profile" aria-label="Cancel editing profile">
                                     <Button variant="outline" className="w-full px-6 sm:w-auto" disabled={processing}>
@@ -201,7 +166,7 @@ export default function UserProfileEdit() {
                                 <Button
                                     type="submit"
                                     variant="default"
-                                    className="w-full px-6 sm:w-auto hover:brightness-125 transition"
+                                    className="w-full px-6 transition hover:brightness-125 sm:w-auto"
                                     style={{ backgroundColor: '#0C0C18', color: '#FFFFFF' }}
                                     disabled={processing}
                                 >
@@ -218,4 +183,3 @@ export default function UserProfileEdit() {
         </AppLayout>
     );
 }
-

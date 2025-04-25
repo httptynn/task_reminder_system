@@ -55,10 +55,10 @@ export interface User {
 export type BreadcrumbItem = {
     title: string;
     href: string;
-};
 
-interface BreadcrumbItem {
+}
+export interface BreadcrumbItem {
     title: string;
     href: string | null;
-}
 
+};

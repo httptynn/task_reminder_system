@@ -95,6 +95,52 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
     })->name('user.profile.update');
+
+    Route::get('task/{id}', function ($id, Request $request) {
+    $cards = [
+        [
+            'title' => 'Project Alpha',
+            'dateAdded' => '2025-04-01',
+            'dateEnd' => '2025-06-30',
+        ],
+        [
+            'title' => 'Website Redesign',
+            'dateAdded' => '2025-03-15',
+            'dateEnd' => '2025-05-15',
+        ],
+        [
+            'title' => 'Mobile App Dev',
+            'dateAdded' => '2025-04-10',
+            'dateEnd' => '2025-07-20',
+        ],
+        [
+            'title' => 'Marketing Campaign',
+            'dateAdded' => '2025-04-20',
+            'dateEnd' => '2025-08-01',
+        ],
+    ];
+
+    $index = (int) $id;
+    $card = $cards[$index] ?? null;
+
+    if (!$card) {
+        abort(404, 'Card not found');
+    }
+
+    $user = auth()->user();
+
+    return Inertia::render('TaskDetail', [
+        'card' => $card,
+        'auth' => [
+            'user' => [
+                'avatar' => $user->avatar ? Storage::url($user->avatar) : null,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+        ],
+    ]);
+})->name('task.view');
+
 });
 
 require __DIR__.'/settings.php';

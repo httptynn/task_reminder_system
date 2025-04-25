@@ -14,7 +14,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
-    const { auth } = usePage<{ auth: { user: { avatar: string | null; name: string; email: string } } }>().props;
+    const { auth } = usePage<{
+        auth: { user: { avatar: string | null; name: string; email: string } };
+    }>().props;
+
     const getInitials = useInitials();
 
     const cards = [
@@ -43,44 +46,56 @@ export default function Dashboard() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-6 p-6">
+                {/* Profile Section */}
                 <Link href="/user/profile" className="block">
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border flex items-center gap-4 rounded-xl border p-4 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
-                        <Avatar className="size-12 rounded-full">
+                    <div className="flex items-center gap-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800">
+                        <Avatar className="size-14 rounded-full">
                             <AvatarImage src={auth.user.avatar ?? ''} alt={auth.user.name} />
                             <AvatarFallback className="rounded-full bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                 {getInitials(auth.user.name)}
                             </AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{auth.user.name}</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">{auth.user.email}</p>
+                            <p className="text-lg font-semibold text-neutral-900 dark:text-white">{auth.user.name}</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">{auth.user.email}</p>
                         </div>
                     </div>
                 </Link>
-                <div className="grid auto-rows-min gap-4 md:grid-cols-4">
+
+                {/* Section Title */}
+                <div>
+                    <h2 className="mb-2 text-xl font-bold text-neutral-800 dark:text-white">Your Projects</h2>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">Manage and keep track of your ongoing tasks</p>
+                </div>
+
+                {/* Cards Grid */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                     {cards.map((card, index) => (
-                        <div
+                        <Link
                             key={index}
-                            className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border"
+                            href={`/task/${index}`}
+                            data={{ card }}
+                            className="relative block overflow-hidden rounded-2xl border border-neutral-200 bg-white transition-all hover:shadow-md dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
                         >
-                            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                            {/* Inner Card */}
-                            <div className="border-sidebar-border absolute right-0 bottom-0 left-0 h-1/2 rounded-b-xl border-t bg-white/90 p-4 shadow-inner dark:bg-neutral-900/80">
-                                <div className="relative h-full">
-                                    <div className="absolute top-0 right-0">
-                                        <Bell className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-                                    </div>
-                                    <div className="flex h-full flex-col justify-end">
-                                        <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">{card.title}</h3>
-                                        <div className="mt-1 space-y-0.5 text-[10px] font-medium text-[#036BFF]">
-                                            <p>Start: {card.dateAdded}</p>
-                                            <p>End: {card.dateEnd}</p>
-                                        </div>
-                                    </div>
+                            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/10 dark:stroke-neutral-100/10" />
+                            {/* Main Card Content */}
+                            <div className="relative z-10 flex h-40 flex-col justify-end rounded-b-2xl border-t border-neutral-100 bg-/90 p-4 shadow-inner dark:border-neutral-700 dark:bg-neutral-900/80">
+                                
+                            </div>
+
+                            {/* Nested Card with #036BFF background */}
+                            <div className="absolute right-0 bottom-0 left-0 rounded-t-2xl bg-[#036BFF] p-4 text-white">
+                                <h4 className="text-sm font-semibold">{card.title}</h4>
+                                <div className="mt-1 text-xs font-medium">
+                                    <p>Start: {card.dateAdded}</p>
+                                    <p>End: {card.dateEnd}</p>
+                                </div>
+                                <div className="absolute top-2 right-2">
+                                    <Bell className="h-5 w-5 text-white" />
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>

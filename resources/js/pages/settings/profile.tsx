@@ -16,16 +16,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-type ProfileForm = {
-    // Removed name and email fields
-};
+type ProfileForm = {};
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-        // Removed name and email initialization
-    });
+    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({});
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -41,7 +37,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Profile information" description="Update your profile information" />
+                    <HeadingSmall title="Profile information" />
 
                     <form onSubmit={submit} className="space-y-6">
                         {mustVerifyEmail && auth.user.email_verified_at === null && (
