@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Member extends User {
     status: 'enabled' | 'disabled';
     role: 'user' | 'admin';
-    disable_reason?: string | null; // Add disable_reason
+    disable_reason?: string | null;
 }
 
 interface PageProps {
@@ -56,12 +56,31 @@ export default function Members({
 }) {
     const { flash } = usePage<PageProps>().props;
     const [searchTerm, setSearchTerm] = useState<string>(search || '');
-    const [errors, setErrors] = useState<{ name?: string; email?: string; role?: string; status?: string }>({});
-    const [formData, setFormData] = useState<{ name: string; email: string; role: string; status: string }>({
+    const [errors, setErrors] = useState<{
+        name?: string;
+        email?: string;
+        role?: string;
+        status?: string;
+        password?: string;
+        password_confirmation?: string;
+        old_password?: string;
+    }>({});
+    const [formData, setFormData] = useState<{
+        name: string;
+        email: string;
+        role: string;
+        status: string;
+        password: string;
+        password_confirmation: string;
+        old_password: string;
+    }>({
         name: '',
         email: '',
         role: 'user',
         status: 'enabled',
+        password: '',
+        password_confirmation: '',
+        old_password: '',
     });
     const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
@@ -99,6 +118,9 @@ export default function Members({
                 email: editMember.email,
                 role: editMember.role,
                 status: editMember.status,
+                password: '',
+                password_confirmation: '',
+                old_password: '',
             });
             setEditingMemberId(editMember.id);
             setIsEditDialogOpen(true);
@@ -114,10 +136,12 @@ export default function Members({
                 email: formData.email,
                 role: formData.role,
                 status: 'enabled',
+                password: formData.password,
+                password_confirmation: formData.password_confirmation,
             },
             {
                 onSuccess: () => {
-                    setFormData({ name: '', email: '', role: 'user', status: 'enabled' });
+                    setFormData({ name: '', email: '', role: 'user', status: 'enabled', password: '', password_confirmation: '', old_password: '' });
                     setIsAddDialogOpen(false);
                     setToast({ message: 'Member added successfully!', variant: 'success' });
                 },
@@ -131,17 +155,40 @@ export default function Members({
     const handleEditMember = () => {
         if (!editingMemberId) return;
         setErrors({});
+    
+        // Prepare data to send, only include password fields if they are filled
+        const updateData: {
+            name: string;
+            email: string;
+            role: string;
+            status: string;
+            old_password?: string;
+            password?: string;
+            password_confirmation?: string;
+        } = {
+            name: formData.name,
+            email: formData.email,
+            role: formData.role,
+            status: formData.status,
+        };
+    
+        // Only include old_password, password, and password_confirmation if they are provided
+        if (formData.old_password) {
+            updateData.old_password = formData.old_password;
+        }
+        if (formData.password) {
+            updateData.password = formData.password;
+        }
+        if (formData.password_confirmation) {
+            updateData.password_confirmation = formData.password_confirmation;
+        }
+    
         router.patch(
             `/members/${editingMemberId}`,
-            {
-                name: formData.name,
-                email: formData.email,
-                role: formData.role,
-                status: formData.status,
-            },
+            updateData,
             {
                 onSuccess: () => {
-                    setFormData({ name: '', email: '', role: 'user', status: 'enabled' });
+                    setFormData({ name: '', email: '', role: 'user', status: 'enabled', password: '', password_confirmation: '', old_password: '' });
                     setEditingMemberId(null);
                     setToast({ message: 'Member updated successfully!', variant: 'success' });
                     setIsEditDialogOpen(false);
@@ -243,6 +290,9 @@ export default function Members({
             email: member.email,
             role: member.role,
             status: member.status,
+            password: '',
+            password_confirmation: '',
+            old_password: '',
         });
         setEditingMemberId(member.id);
         setIsEditDialogOpen(true);
@@ -262,23 +312,19 @@ export default function Members({
             <Head title="Members" />
             <div className="flex h-full flex-1 flex-col gap-5 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-semibold">Member Management</h1>
                     <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground mr-2 text-sm">{initialMembers.total} members</span>
-                        <div className="relative">
-                            <Input
-                                type="text"
-                                placeholder="Search by name or email"
-                                className="pr-2 pl-8"
-                                value={searchTerm}
-                                onChange={(e) => handleSearchChange(e.target.value)}
-                            />
-                            <Search className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                        </div>
                         <Button
-                            className="flex items-center gap-2 bg-blue-950 text-white hover:bg-blue-900 hover:text-white"
+                            className="flex items-center gap-2 bg-blue-950 text-white hover:bg-blue-950/90 hover:text-white"
                             onClick={() => {
-                                setFormData({ name: '', email: '', role: 'user', status: 'enabled' });
+                                setFormData({
+                                    name: '',
+                                    email: '',
+                                    role: 'user',
+                                    status: 'enabled',
+                                    password: '',
+                                    password_confirmation: '',
+                                    old_password: '',
+                                });
                                 setErrors({});
                                 setIsAddDialogOpen(true);
                             }}
@@ -286,6 +332,16 @@ export default function Members({
                             <UserRoundPlus className="h-4 w-4" />
                             Add Member
                         </Button>
+                    </div>
+                    <div className="relative flex-1 max-w-sm">
+                        <Input
+                            type="text"
+                            placeholder="Search by name or email"
+                            className="w-full pr-2 pl-8"
+                            value={searchTerm}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                        />
+                        <Search className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     </div>
                 </div>
                 <div className="flex-1">
@@ -299,10 +355,18 @@ export default function Members({
                 </div>
                 <Dialog
                     open={isAddDialogOpen}
-                    onOpenChange={(open) => {
+                    onOpenChange={(open: boolean) => {
                         setIsAddDialogOpen(open);
                         if (!open) {
-                            setFormData({ name: '', email: '', role: 'user', status: 'enabled' });
+                            setFormData({
+                                name: '',
+                                email: '',
+                                role: 'user',
+                                status: 'enabled',
+                                password: '',
+                                password_confirmation: '',
+                                old_password: '',
+                            });
                             setErrors({});
                         }
                     }}
@@ -332,23 +396,44 @@ export default function Members({
                                 <InputError message={errors.email} />
                             </div>
                             <div>
-                                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="user">Member</SelectItem>
-                                        <SelectItem value="admin">Admin</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    type="text"
+                                    placeholder="Role"
+                                    value={formData.role === 'user' ? 'Member' : 'Admin'}
+                                    className="text-foreground cursor-not-allowed border-gray-300 focus:border-gray-300 focus:ring-0"
+                                />
                                 <InputError message={errors.role} />
+                            </div>
+                            <div>
+                                <Input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                />
+                                <InputError message={errors.password} />
+                            </div>
+                            <div>
+                                <Input
+                                    type="password"
+                                    placeholder="Confirm Password"
+                                    value={formData.password_confirmation}
+                                    onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
+                                />
+                                <InputError message={errors.password_confirmation} />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                            <Button
+                                variant="outline"
+                                className="border-blue-600 text-blue-600 hover:text-blue-600/90"
+                                onClick={() => setIsAddDialogOpen(false)}
+                            >
                                 Cancel
                             </Button>
-                            <Button onClick={handleAddMember}>Add</Button>
+                            <Button onClick={handleAddMember} className="bg-blue-600 hover:bg-blue-600/90">
+                                Add
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -357,7 +442,15 @@ export default function Members({
                     onOpenChange={(open) => {
                         setIsEditDialogOpen(open);
                         if (!open) {
-                            setFormData({ name: '', email: '', role: 'user', status: 'enabled' });
+                            setFormData({
+                                name: '',
+                                email: '',
+                                role: 'user',
+                                status: 'enabled',
+                                password: '',
+                                password_confirmation: '',
+                                old_password: '',
+                            });
                             setEditingMemberId(null);
                         }
                     }}
@@ -387,26 +480,53 @@ export default function Members({
                                 <InputError message={errors.email} />
                             </div>
                             <div>
-                                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="user">Member</SelectItem>
-                                        <SelectItem value="admin">Admin</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    type="text"
+                                    placeholder="Role"
+                                    value={formData.role === 'user' ? 'Member' : 'Admin'}
+                                    className="cursor-not-allowed"
+                                />
                                 <InputError message={errors.role} />
                             </div>
                             <div>
-                                <InputError message={errors.status} />
+                                <Input
+                                    type="password"
+                                    placeholder="Old Password"
+                                    value={formData.old_password}
+                                    onChange={(e) => setFormData({ ...formData, old_password: e.target.value })}
+                                />
+                                <InputError message={errors.old_password} />
+                            </div>
+                            <div>
+                                <Input
+                                    type="password"
+                                    placeholder="New Password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                />
+                                <InputError message={errors.password} />
+                            </div>
+                            <div>
+                                <Input
+                                    type="password"
+                                    placeholder="Confirm New Password"
+                                    value={formData.password_confirmation}
+                                    onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
+                                />
+                                <InputError message={errors.password_confirmation} />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                            <Button
+                                variant="outline"
+                                className="border-green-700 text-green-700 hover:text-green-700/90"
+                                onClick={() => setIsEditDialogOpen(false)}
+                            >
                                 Cancel
                             </Button>
-                            <Button onClick={handleEditMember}>Save</Button>
+                            <Button onClick={handleEditMember} className="bg-green-700 hover:bg-green-700/90">
+                                Save
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -425,6 +545,7 @@ export default function Members({
                         <DialogFooter>
                             <Button
                                 variant="outline"
+                                className="hover:bg-accent border-red-600 text-red-600 hover:text-red-600/90"
                                 onClick={() => {
                                     setIsSingleDeleteDialogOpen(false);
                                     setDeletingMemberId(null);
@@ -475,7 +596,11 @@ export default function Members({
                             )}
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>
+                            <Button
+                                variant="outline"
+                                className="border-green-600 text-green-600 hover:text-green-600/90"
+                                onClick={() => setIsStatusDialogOpen(false)}
+                            >
                                 Cancel
                             </Button>
                             <Button onClick={confirmStatusChange}>{statusChange?.newStatus === 'enabled' ? 'Enable' : 'Disable'}</Button>

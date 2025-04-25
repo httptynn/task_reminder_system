@@ -57,8 +57,9 @@ export default function Welcome() {
     return (
         <>
             <Head title="Welcome">
-                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link rel="reconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+                <link rel="reload" href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" />
             </Head>
             <div 
                 className={`flex min-h-screen flex-col items-center text-white ${isMobile ? 'p-4' : 'p-6 lg:p-8 lg:justify-center'}`}
@@ -69,7 +70,7 @@ export default function Welcome() {
                 }}
             >
                 <motion.header 
-                    className={`mb-6 w-full text-sm ${isMobile ? 'max-w-[300px]' : 'max-w-[335px] lg:max-w-4xl'}`}
+                    className={`w-full text-sm ${isMobile ? 'max-w-[300px]' : 'max-w-[335px] lg:max-w-4xl max-mb-[100px]'}`}
                     variants={headerVariants}
                     initial="hidden"
                     animate="visible"
@@ -111,7 +112,7 @@ export default function Welcome() {
             animate="visible"
         />
         <motion.h1 
-            className={`font-bold text-blue-300 ${isMobile ? 'text-xl' : 'text-2xl'}`}
+            className={`font-bold text-blue-300 ${isMobile ? 'text-xl' : 'text-3xl'}`}
             variants={headingVariants}
             initial="hidden"
             animate="visible"

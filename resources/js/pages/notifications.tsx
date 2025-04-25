@@ -193,7 +193,7 @@ export default function Notifications({ notifications: initialNotifications }: P
                         variant={filter === 'all' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handleFilterChange('all')}
-                        className={filter === 'all' ? 'bg-chart-2 text-white hover:bg-chart-2/90' : ''}
+                        className={filter === 'all' ? 'bg-blue-950 text-white hover:bg-blue-950/90' : ''}
                     >
                         All ({initialNotifications.total})
                     </Button>
@@ -201,7 +201,7 @@ export default function Notifications({ notifications: initialNotifications }: P
                         variant={filter === 'unread' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handleFilterChange('unread')}
-                        className={filter === 'unread' ? 'bg-chart-2 text-white hover:bg-chart-2/90' : ''}
+                        className={filter === 'unread' ? 'bg-blue-950 text-white hover:bg-blue-950/90' : ''}
                     >
                         Unread ({notifications.filter((n) => !n.read).length})
                     </Button>

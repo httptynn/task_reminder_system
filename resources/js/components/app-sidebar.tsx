@@ -1,10 +1,9 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, UsersRound, Calendar, Bell, UserRoundPlusIcon, User, UserRound} from 'lucide-react';
+import { Folder, LayoutGrid, Calendar, Bell, UserRound} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -13,30 +12,18 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
-
     
     {
-        title: 'Assignee',
+        title: 'Tasks',
         href: '/assignee',
-        icon: UserRoundPlusIcon,
-    },
-
-    {
-        title: 'Projects',
-        href: '/projects',
         icon: Folder,
     },
 
+ 
     {
         title: 'Members',
         href: '/members',
         icon: UserRound,
-    },
-
-    {
-        title: 'Teams',
-        href: '/teams',
-        icon: UsersRound,
     },
 
     {
@@ -76,7 +63,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-               
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

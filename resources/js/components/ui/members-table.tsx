@@ -32,7 +32,7 @@ export function MembersTable({
 }: MembersTableProps) {
   return (
     <div className="flex flex-col">
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 rounded-lg overflow-hidden">
         <div className="flex items-center px-4 py-3 font-medium text-sm uppercase text-[#1E1E1E] bg-blue-200">
           <div className="flex-1 pl-4">Name</div>
           <div className="flex-1">Email</div>

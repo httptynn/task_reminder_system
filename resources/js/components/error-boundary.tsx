@@ -1,4 +1,3 @@
-// components/ErrorBoundary.tsx
 import * as React from 'react';
 
 interface ErrorBoundaryProps {
@@ -18,7 +17,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
     render() {
         if (this.state.hasError) {
-            return <div className="text-destructive">Something went wrong with the time picker.</div>;
+            return <div className="text-destructive">Something went wrong. Please try again.</div>;
         }
         return this.props.children;
     }

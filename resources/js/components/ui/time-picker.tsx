@@ -8,8 +8,8 @@ import { enUS } from "date-fns/locale/en-US";
 registerLocale("en-US", enUS);
 
 interface TimePickerProps {
-  value: Date | null;
-  onChange: (time: Date | null) => void;
+  value: Date;
+  onChange: (time: Date, event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => void;
   className?: string;
   id?: string;
   "aria-label"?: string;
@@ -26,12 +26,20 @@ function TimePicker({
   "aria-labelledby": ariaLabelledBy,
   ...rest
 }: TimePickerProps) {
+  const handleChange = (time: Date | null, event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => {
+    console.log('TimePicker onChange:', time);
+    // Since isClearable={false}, time should never be null, but TypeScript requires handling it
+    if (time) {
+      onChange(time, event);
+    }
+  };
+
   return (
     <div className="relative w-full">
       <ReactDatePicker
         id={id}
         selected={value}
-        onChange={onChange}
+        onChange={handleChange}
         className={cn(
           "border-input placeholder:text-muted-foreground flex h-9 w-full min-w-0 rounded-md border bg-transparent text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm box-border px-3",
           "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
@@ -49,6 +57,7 @@ function TimePicker({
         timeInputLabel="Time"
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
+        isClearable={false}
         {...rest}
       />
     </div>

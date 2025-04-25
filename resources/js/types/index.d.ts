@@ -42,13 +42,14 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
-// export interface Task {
-//     id: number;
-//     title: string;
-//     description: string;
-//     attached_file: File | null;
-//     assignee: string;
-//     started_date: string;
-//     due_date: string;
-//     status: 'pending' | 'in_progress' | 'completed' | 'overdue';
-//   }
+export interface Task {
+    id: number;
+    title: string;
+    description: string;
+    attached_file: string | null;
+    assignee_id: number; 
+    assignee?: string | null; 
+    due_date_time: string;
+    started_date_time: string;
+    status: 'pending' | 'on progress' | 'done' | 'overdue';
+}

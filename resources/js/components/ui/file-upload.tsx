@@ -37,23 +37,23 @@ export function FileUpload({ onFileSelect, className }: FileUploadProps) {
   const getFileIcon = (file: File) => {
     const fileType = file.type;
     if (fileType.startsWith("image/")) {
-      return <Image className="h-12 w-12 text-blue-600" />;
+      return <Image className="h-12 w-12 text-chart-2" />;
     } else if (fileType.startsWith("video/")) {
-      return <Video className="h-12 w-12 text-blue-600" />;
+      return <Video className="h-12 w-12 text-chart-2" />;
     } else if (
       fileType.includes("pdf") ||
       fileType.includes("doc") ||
       fileType.includes("docx")
     ) {
-      return <FileText className="h-12 w-12 text-blue-600" />;
+      return <FileText className="h-12 w-12 text-chart-2" />;
     }
-    return <FileText className="h-12 w-12 text-blue-600" />; // Default icon for unknown types
+    return <FileText className="h-12 w-12 text-chart-2" />; // Default icon for unknown types
   };
 
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 dark:bg-background",
+        "flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-6 bg-green-50",
         className
       )}
     >
@@ -66,38 +66,32 @@ export function FileUpload({ onFileSelect, className }: FileUploadProps) {
             {/* Remove Button */}
             <button
               onClick={handleRemoveFile}
-              className="absolute top-0 right-0 -mt-2 -mr-2 bg-gray-200 rounded-full p-1"
+              className="absolute top-0 right-0 -mt-2 -mr-2 bg-muted rounded-full p-1"
             >
-              <X className="h-4 w-4 text-gray-600" />
+              <X className="h-4 w-4 text-foreground" />
             </button>
           </div>
           {/* File Name */}
-          <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
+          <p className="text-sm text-foreground mt-2">
             {selectedFile.name}
           </p>
-          {/* Upload Another File Button */}
-          <Button
-            onClick={handleUploadClick}
-            className="mt-4 bg-blue-600 text-white hover:bg-blue-700"
-          >
-            Upload file
-          </Button>
         </div>
       ) : (
         // UI when no file is attached
         <>
           {/* Cloud Icon */}
-          <CloudUpload className="h-12 w-12 text-gray-400 mb-2" />
+          <CloudUpload className="h-12 w-12 text-chart-2 mb-2" />
           {/* Upload Text */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Upload file here
+          <p className="text-sm text-chart-2 mb-4">
+            Attach your file here
           </p>
           {/* Upload Button */}
           <Button
+            type="button"
             onClick={handleUploadClick}
-            className="bg-chart-2 text-white hover:bg-chart-2/90"
+            className="bg-chart-2 text-primary-foreground hover:bg-chart-2/90"
           >
-            Upload file
+            Browse
           </Button>
         </>
       )}

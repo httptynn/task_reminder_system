@@ -5,15 +5,15 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/members', [MemberController::class, 'index'])->middleware('role:admin')->name('members');
     Route::post('/members', [MemberController::class, 'store'])->middleware('role:admin')->name('members.store');
@@ -28,9 +28,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->middleware('role:admin')->name('notifications.markAllRead');
     Route::post('notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->middleware('role:admin')->name('notifications.markAsRead');
 
-    Route::get('assignee', function () {
-        return Inertia::render('assignee');
-    })->name('assignee');
+    Route::get('assignee', [TaskController::class, 'index'])->name('assignee.index');
+    Route::post('assignee', [TaskController::class, 'store'])->name('assignee.store');
+    Route::patch('assignee/{task}', [TaskController::class, 'update'])->name('assignee.update');
+    Route::delete('assignee/{task}', [TaskController::class, 'destroy'])->name('assignee.destroy');
 
 });
 

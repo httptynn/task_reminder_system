@@ -8,8 +8,8 @@ import { enUS } from "date-fns/locale/en-US";
 registerLocale("en-US", enUS);
 
 interface DatePickerProps {
-  value: Date | null;
-  onChange: (date: Date | null) => void;
+  value: Date;
+  onChange: (date: Date, event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => void;
   className?: string;
   id?: string;
   "aria-label"?: string;
@@ -26,12 +26,19 @@ function DatePicker({
   "aria-labelledby": ariaLabelledBy,
   ...rest
 }: DatePickerProps) {
+  const handleChange = (date: Date | null, event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => {
+    // Since isClearable={false}, date should never be null, but TypeScript requires handling it
+    if (date) {
+      onChange(date, event);
+    }
+  };
+
   return (
     <div className="relative w-full">
       <ReactDatePicker
         id={id}
         selected={value}
-        onChange={onChange}
+        onChange={handleChange}
         className={cn(
           "border-input placeholder:text-muted-foreground flex h-9 w-full min-w-0 rounded-md border bg-transparent text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm box-border px-3",
           "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
@@ -44,6 +51,7 @@ function DatePicker({
         locale="en-US"
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
+        isClearable={false}
         {...rest}
       />
     </div>
