@@ -5,19 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Task;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $perPage = $request->input('per_page', 8); // Default to 8 tasks per page, matching Members
-        $search = $request->query('search'); // Optional: Add search support like Members
-        $status = $request->query('status'); // Add status filter from query parameter
+        $perPage = $request->input('per_page', 8);
+        $search = $request->query('search');
+        $status = $request->query('status');
 
         // Update overdue tasks in bulk
         Task::whereNotNull('due_date_time')
@@ -25,30 +24,15 @@ class TaskController extends Controller
             ->where('status', '!=', 'done')
             ->update(['status' => 'overdue']);
 
-        if ($user->role === 'admin') {
-            $tasksQuery = Task::query()
-                ->when($search, function ($query, $search) {
-                    $query->where('title', 'like', "%{$search}%")
-                          ->orWhere('description', 'like', "%{$search}%");
-                })
-                ->when($status, function ($query, $status) {
-                    $query->where('status', $status);
-                })
-                ->orderBy('created_at', 'desc');
-            $users = User::all(['id', 'name']);
-        } else {
-            $tasksQuery = Task::query()
-                ->where('assignee_id', $user->id)
-                ->when($search, function ($query, $search) {
-                    $query->where('title', 'like', "%{$search}%")
-                          ->orWhere('description', 'like', "%{$search}%");
-                })
-                ->when($status, function ($query, $status) {
-                    $query->where('status', $status);
-                })
-                ->orderBy('created_at', 'desc');
-            $users = User::where('id', $user->id)->get(['id', 'name']);
-        }
+        $tasksQuery = Task::query()
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+            })
+            ->when($status, function ($query, $status) {
+                $query->where('status', $status);
+            })
+            ->orderBy('created_at', 'desc');
 
         $tasks = $tasksQuery->paginate($perPage)
             ->withQueryString()
@@ -56,22 +40,21 @@ class TaskController extends Controller
                 return $this->formatTask($task);
             });
 
+        $users = User::all(['id', 'name']);
+
         return Inertia::render('assignee', [
             'tasks' => $tasks,
             'users' => $users,
-            'isAdmin' => $user->role === 'admin',
-            'search' => $search, // Pass search term to frontend
-            'status' => $status, // Pass status filter to frontend
+            'isAdmin' => true,
+            'search' => $search,
+            'status' => $status,
         ]);
     }
 
     public function store(Request $request)
     {
-        // Only admins can create tasks
-        if (Auth::user()->role !== 'admin') {
-            return redirect()->route('assignee.index')->with('error', 'Only admins can create tasks.');
-        }
-
+        Log::info('Full request data:', $request->all());
+        Log::info('Files in request:', $request->allFiles());
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -95,7 +78,7 @@ class TaskController extends Controller
             'due_date_time' => $validated['due_date_time'],
             'started_date' => $validated['started_date'],
             'status' => $validated['status'],
-            'created_by' => Auth::id(),
+            'created_by' => auth()->id(),
         ]);
 
         return redirect()->route('assignee.index')->with('success', 'Task created successfully!');
@@ -103,60 +86,57 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
-        $user = Auth::user();
-        Log::info('Update request data:', $request->all());
+        // Log raw input
+        Log::info('Raw request input:', ['input' => $request->getContent()]);
+        // Log parsed request data
+        Log::info('Parsed request data:', $request->all());
+        // Log specific fields
+        Log::info('Form fields:', [
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'assignee_id' => $request->input('assignee_id'),
+            'due_date_time' => $request->input('due_date_time'),
+            'started_date' => $request->input('started_date'),
+            'status' => $request->input('status'),
+            'attached_file' => $request->hasFile('attached_file') ? 'File present' : 'No file',
+            '_method' => $request->input('_method'),
+        ]);
+        // Log headers
+        Log::info('Request headers:', $request->headers->all());
 
-        if ($user->role === 'admin') {
-            $validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'required|string',
-                'attached_file' => 'nullable|file|max:10240',
-                'assignee_id' => 'required|exists:users,id',
-                'due_date_time' => 'required|date',
-                'started_date' => 'required|date',
-                'status' => 'required|in:pending,on progress,done,overdue',
-            ]);
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'attached_file' => 'nullable|file|max:10240',
+            'assignee_id' => 'required|exists:users,id',
+            'due_date_time' => 'required|date',
+            'started_date' => 'required|date',
+            'status' => 'required|in:pending,on progress,done,overdue',
+        ]);
 
-            $filePath = $task->attached_file;
-            if ($request->hasFile('attached_file')) {
-                if ($filePath) {
-                    Storage::disk('public')->delete($filePath);
-                }
-                $filePath = $request->file('attached_file')->store('task_files', 'public');
+        $filePath = $task->attached_file;
+        if ($request->hasFile('attached_file')) {
+            if ($filePath) {
+                Storage::disk('public')->delete($filePath);
             }
-
-            $task->update([
-                'title' => $validated['title'],
-                'description' => $validated['description'],
-                'attached_file' => $filePath,
-                'assignee_id' => $validated['assignee_id'],
-                'due_date_time' => $validated['due_date_time'],
-                'started_date' => $validated['started_date'],
-                'status' => $validated['status'],
-            ]);
-        } else {
-            if ($task->assignee_id !== $user->id) {
-                return redirect()->route('assignee.index')->with('error', 'Unauthorized action.');
-            }
-
-            $validated = $request->validate([
-                'status' => 'required|in:pending,on progress,done,overdue',
-            ]);
-
-            $task->update([
-                'status' => $validated['status'],
-            ]);
+            $filePath = $request->file('attached_file')->store('task_files', 'public');
         }
+
+        $task->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'attached_file' => $filePath,
+            'assignee_id' => $validated['assignee_id'],
+            'due_date_time' => $validated['due_date_time'],
+            'started_date' => $validated['started_date'],
+            'status' => $validated['status'],
+        ]);
 
         return redirect()->route('assignee.index')->with('success', 'Task updated successfully!');
     }
 
     public function destroy(Task $task)
     {
-        if (Auth::user()->role !== 'admin') {
-            return redirect()->route('assignee.index')->with('error', 'Only admins can delete tasks.');
-        }
-
         if ($task->attached_file) {
             Storage::disk('public')->delete($task->attached_file);
         }

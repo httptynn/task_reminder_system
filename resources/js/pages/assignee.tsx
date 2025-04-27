@@ -55,8 +55,8 @@ export default function Assignee() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [attachedFile, setAttachedFile] = useState<File | null>(null);
-    const [assigneeId, setAssigneeId] = useState<string>(users[0]?.id.toString() || '');
-    const [dueDateTime, setDueDateTime] = useState<Dayjs>(dayjs());
+    const [assigneeId, setAssigneeId] = useState<string>('');
+    const [dueDateTime, setDueDateTime] = useState<Dayjs | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null);
@@ -64,6 +64,7 @@ export default function Assignee() {
     const [toastMessage, setToastMessage] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
     const [titleError, setTitleError] = useState<string | undefined>(undefined);
     const [descriptionError, setDescriptionError] = useState<string | undefined>(undefined);
+    const [assigneeError, setAssigneeError] = useState<string | undefined>(undefined);
     const [dueDateTimeError, setDueDateTimeError] = useState<string | undefined>(undefined);
     const [searchTerm, setSearchTerm] = useState<string>(initialSearch || '');
     const [filterStatus, setFilterStatus] = useState<string>(
@@ -86,95 +87,136 @@ export default function Assignee() {
         }
     }, [flash]);
 
-    // Set default assignee for UX purposes
-    useEffect(() => {
-        if (users.length > 0 && !assigneeId && !editingTaskId) {
-            setAssigneeId(users[0].id.toString());
-        }
-    }, [users, assigneeId, editingTaskId]);
-
     const handleFileSelect = (file: File | null) => {
         setAttachedFile(file);
     };
 
-    const handleDateChange = (date: Date, _event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => {
-        const newDate = dueDateTime.toDate();
+    const handleDateChange = (date: Date) => {
+        const newDate = dueDateTime ? dueDateTime.toDate() : new Date();
         newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
         setDueDateTime(dayjs(newDate));
-        if (dueDateTimeError) {
-            setDueDateTimeError(undefined);
-        }
+        setDueDateTimeError(undefined);
     };
 
-    const handleTimeChange = (time: Date, _event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => {
-        const newDate = dueDateTime.toDate();
+    const handleTimeChange = (time: Date) => {
+        const newDate = dueDateTime ? dueDateTime.toDate() : new Date();
         newDate.setHours(time.getHours(), time.getMinutes());
         setDueDateTime(dayjs(newDate));
-        if (dueDateTimeError) {
-            setDueDateTimeError(undefined);
-        }
+        setDueDateTimeError(undefined);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
+      
+        // Reset errors
         setTitleError(undefined);
         setDescriptionError(undefined);
+        setAssigneeError(undefined);
         setDueDateTimeError(undefined);
-
+      
         let hasError = false;
-
-        if (!title.trim()) {
-            setTitleError('Title is required');
-            hasError = true;
+      
+        // Validate required fields
+        if (!title) {
+          setTitleError('Title is required');
+          hasError = true;
         }
-        if (!description.trim()) {
-            setDescriptionError('Description is required');
-            hasError = true;
+        if (!description) {
+          setDescriptionError('Description is required');
+          hasError = true;
         }
-        if (!assigneeId || !users.some((user) => user.id.toString() === assigneeId)) {
-            setDueDateTimeError('Please select a valid assignee');
-            hasError = true;
+        if (!assigneeId) {
+          setAssigneeError('Please select an assignee');
+          hasError = true;
         }
-
+        if (!dueDateTime || !dueDateTime.isValid()) {
+          setDueDateTimeError('Due date and time are required');
+          hasError = true;
+        }
+      
         if (hasError) {
-            return;
+          console.log('Client-side validation errors:', { titleError, descriptionError, assigneeError, dueDateTimeError });
+          return;
         }
-
+      
+        // Create FormData object
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
-        if (attachedFile) {
-            formData.append('attached_file', attachedFile);
-        }
         formData.append('assignee_id', assigneeId);
-        formData.append('due_date_time', dueDateTime.toISOString());
-        const startedDate = editingTaskId ? initialTasks.data.find((task) => task.id === editingTaskId)!.started_date_time : dayjs().toISOString();
-        formData.append('started_date', startedDate);
-        formData.append('status', 'pending');
-        if (editingTaskId) {
-            formData.append('_method', 'PATCH');
+        formData.append('due_date_time', dueDateTime!.toISOString());
+        formData.append(
+          'started_date',
+          editingTaskId
+            ? initialTasks.data.find((task) => task.id === editingTaskId)?.started_date_time || dayjs().toISOString()
+            : dayjs().toISOString()
+        );
+        formData.append(
+          'status',
+          editingTaskId
+            ? initialTasks.data.find((task) => task.id === editingTaskId)?.status || 'pending'
+            : 'pending'
+        );
+      
+        // Append file if it exists
+        if (attachedFile) {
+          formData.append('attached_file', attachedFile);
         }
-
-        const method = 'post';
-        const url = editingTaskId ? `/assignee/${editingTaskId}` : '/assignee';
-
-        router[method](url, formData, {
-            onSuccess: () => {
-                setTitle('');
-                setDescription('');
-                setAttachedFile(null);
-                setAssigneeId(users[0]?.id.toString() || '');
-                setDueDateTime(dayjs());
-                setEditingTaskId(null);
-                setIsDialogOpen(false);
-            },
-            onError: (errors) => {
-                console.error('Error submitting task:', errors);
-                setToastMessage({ message: 'Failed to save task', variant: 'error' });
-            },
+      
+        // Add _method for PATCH requests (Laravel expects this for spoofing PUT/PATCH)
+        if (editingTaskId) {
+          formData.append('_method', 'PATCH');
+        }
+      
+        // Log data for debugging
+        console.log('FormData being sent:', {
+          title,
+          description,
+          assignee_id: assigneeId,
+          due_date_time: dueDateTime!.toISOString(),
+          started_date: formData.get('started_date'),
+          status: formData.get('status'),
+          attached_file: attachedFile ? attachedFile.name : 'No file',
         });
-    };
+      
+        const method = editingTaskId ? 'post' : 'post'; // Use 'post' for both, as _method handles PATCH
+        const url = editingTaskId ? `/assignee/${editingTaskId}` : '/assignee';
+      
+        router[method](url, formData, {
+          preserveState: true,
+          preserveScroll: true,
+          onBefore: () => {
+            console.log('Sending request to:', url, 'with method:', method);
+          },
+          onSuccess: () => {
+            console.log('Request successful');
+            setTitle('');
+            setDescription('');
+            setAttachedFile(null);
+            setAssigneeId('');
+            setDueDateTime(null);
+            setEditingTaskId(null);
+            setIsDialogOpen(false);
+            setToastMessage({
+              message: editingTaskId ? 'Task updated successfully!' : 'Task created successfully!',
+              variant: 'success',
+            });
+            router.reload({ only: ['tasks', 'flash'] });
+          },
+          onError: (errors) => {
+            console.error('Server validation errors:', errors);
+            setToastMessage({ message: 'Failed to save task', variant: 'error' });
+            if (errors.title) setTitleError(errors.title);
+            if (errors.description) setDescriptionError(errors.description);
+            if (errors.assignee_id) setAssigneeError(errors.assignee_id);
+            if (errors.due_date_time) setDueDateTimeError(errors.due_date_time);
+            if (errors.attached_file) setToastMessage({ message: errors.attached_file, variant: 'error' });
+          },
+          onFinish: () => {
+            console.log('Request finished');
+          },
+        });
+      };
 
     const handleDelete = (id: number) => {
         setDeletingTaskId(id);
@@ -185,14 +227,14 @@ export default function Assignee() {
         if (!deletingTaskId) return;
 
         router.delete(`/assignee/${deletingTaskId}`, {
+            preserveState: true,
+            preserveScroll: true,
             onSuccess: () => {
-                console.log('Task deleted successfully');
                 setToastMessage({ message: 'Task deleted successfully', variant: 'success' });
                 setIsDeleteDialogOpen(false);
                 setDeletingTaskId(null);
             },
-            onError: (errors) => {
-                console.error('Error deleting task:', errors);
+            onError: () => {
                 setToastMessage({ message: 'Failed to delete task', variant: 'error' });
                 setIsDeleteDialogOpen(false);
                 setDeletingTaskId(null);
@@ -201,15 +243,17 @@ export default function Assignee() {
     };
 
     const handleEdit = (task: Task) => {
-        setTitle(task.title);
-        setDescription(task.description);
+        console.log('Editing task:', task);
+        setTitle(task.title || '');
+        setDescription(task.description || '');
         setAttachedFile(null);
-        setAssigneeId(task.assignee_id?.toString() || '');
-        setDueDateTime(dayjs(task.due_date_time));
+        setAssigneeId(task.assignee_id ? task.assignee_id.toString() : '');
+        setDueDateTime(task.due_date_time ? dayjs(task.due_date_time) : null);
         setEditingTaskId(task.id);
         setIsDialogOpen(true);
         setTitleError(undefined);
         setDescriptionError(undefined);
+        setAssigneeError(undefined);
         setDueDateTimeError(undefined);
     };
 
@@ -229,7 +273,6 @@ export default function Assignee() {
             preserveState: true,
             preserveScroll: true,
             only: ['tasks', 'flash', 'search', 'status'],
-            onError: (errors) => console.error('Inertia error:', errors),
         });
     };
 
@@ -250,6 +293,8 @@ export default function Assignee() {
         assignee: getAssigneeName(task.assignee_id),
     }));
 
+    console.log('Attached file:', attachedFile);
+
     return (
         <ErrorBoundary>
             <AppLayout breadcrumbs={breadcrumbs}>
@@ -260,9 +305,7 @@ export default function Assignee() {
 
                     {/* Header Section */}
                     <div className="flex flex-col gap-2">
-                        {/* Row: Create Task (left) and Search/Filter (right) */}
                         <div className="flex justify-between items-center p-2 rounded-md">
-                            {/* Create Task (Left-Aligned) */}
                             <div>
                                 <Dialog
                                     open={isDialogOpen}
@@ -272,11 +315,12 @@ export default function Assignee() {
                                             setTitle('');
                                             setDescription('');
                                             setAttachedFile(null);
-                                            setAssigneeId(users[0]?.id.toString() || '');
-                                            setDueDateTime(dayjs());
+                                            setAssigneeId('');
+                                            setDueDateTime(null);
                                             setEditingTaskId(null);
                                             setTitleError(undefined);
                                             setDescriptionError(undefined);
+                                            setAssigneeError(undefined);
                                             setDueDateTimeError(undefined);
                                         }
                                     }}
@@ -307,12 +351,7 @@ export default function Assignee() {
                                                         id="title"
                                                         placeholder="Organize Weekly Team Meeting"
                                                         value={title}
-                                                        onChange={(e) => {
-                                                            setTitle(e.target.value);
-                                                            if (titleError && e.target.value.trim()) {
-                                                                setTitleError(undefined);
-                                                            }
-                                                        }}
+                                                        onChange={(e) => setTitle(e.target.value)}
                                                         className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
                                                     />
                                                     <InputError message={titleError} className="mt-1" />
@@ -325,12 +364,7 @@ export default function Assignee() {
                                                         id="description"
                                                         placeholder="Schedule and prepare for the weekly team meeting"
                                                         value={description}
-                                                        onChange={(e) => {
-                                                            setDescription(e.target.value);
-                                                            if (descriptionError && e.target.value.trim()) {
-                                                                setDescriptionError(undefined);
-                                                            }
-                                                        }}
+                                                        onChange={(e) => setDescription(e.target.value)}
                                                         className="border-border bg-background text-foreground mt-1 box-border min-h-[100px] w-full rounded-md border px-3"
                                                     />
                                                     <InputError message={descriptionError} className="mt-1" />
@@ -339,20 +373,19 @@ export default function Assignee() {
                                                     <label htmlFor="assignee" className="text-foreground text-sm font-medium">
                                                         Assignee
                                                     </label>
-                                                    <div>
-                                                        <Select value={assigneeId} onValueChange={(value) => setAssigneeId(value)}>
-                                                            <SelectTrigger className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3">
-                                                                <SelectValue placeholder="Select an assignee" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {users.map((user) => (
-                                                                    <SelectItem key={user.id} value={user.id.toString()}>
-                                                                        {user.name}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
+                                                    <Select value={assigneeId} onValueChange={setAssigneeId}>
+                                                        <SelectTrigger className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3">
+                                                            <SelectValue placeholder="Select an assignee" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {users.map((user) => (
+                                                                <SelectItem key={user.id} value={user.id.toString()}>
+                                                                    {user.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <InputError message={assigneeError} className="mt-1" />
                                                 </div>
                                                 <div className="flex flex-col gap-2">
                                                     <div>
@@ -361,7 +394,7 @@ export default function Assignee() {
                                                         </label>
                                                         <DatePicker
                                                             id="due-date"
-                                                            value={dueDateTime.toDate()}
+                                                            value={dueDateTime?.toDate() || new Date()}
                                                             onChange={handleDateChange}
                                                             className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
                                                             aria-labelledby="due-date-label"
@@ -373,7 +406,7 @@ export default function Assignee() {
                                                         </label>
                                                         <TimePicker
                                                             id="due-time"
-                                                            value={dueDateTime.toDate()}
+                                                            value={dueDateTime?.toDate() || new Date()}
                                                             onChange={handleTimeChange}
                                                             className="border-border bg-background text-foreground mt-1 box-border w-full rounded-md border px-3"
                                                             aria-labelledby="due-date-label"
@@ -396,20 +429,17 @@ export default function Assignee() {
                                 </Dialog>
                             </div>
 
-                            {/* Search and Filter (Right-Aligned) */}
                             <div className="flex items-center gap-2">
-                                {/* Search */}
                                 <div className="relative">
                                     <Input
                                         type="text"
                                         placeholder="Search by title or description"
-                                        className="pr-2 pl-8 w-full "
+                                        className="pr-2 pl-8 w-full"
                                         value={searchTerm}
                                         onChange={(e) => handleSearchChange(e.target.value)}
                                     />
                                     <Search className="absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                 </div>
-                                {/* Filter */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button
@@ -442,7 +472,6 @@ export default function Assignee() {
                         </div>
                     </div>
 
-                    {/* Table */}
                     <div className="flex-1">
                         <TasksTable
                             tasks={tasksWithAssigneeName}
@@ -458,7 +487,6 @@ export default function Assignee() {
                         />
                     </div>
 
-                    {/* Delete Confirmation Dialog */}
                     <Dialog
                         open={isDeleteDialogOpen}
                         onOpenChange={(open) => {
@@ -471,7 +499,7 @@ export default function Assignee() {
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>Confirmation Deletion</DialogTitle>
-                                <DialogDescription>Are you sure do you want to delete this task?</DialogDescription>
+                                <DialogDescription>Are you sure you want to delete this task?</DialogDescription>
                             </DialogHeader>
                             <DialogFooter>
                                 <Button
