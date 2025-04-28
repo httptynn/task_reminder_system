@@ -191,7 +191,7 @@ class MemberController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 8);
+        $perPage = $request->input('per_page', 9);
         $search = $request->query('search');
 
         $members = User::query()
