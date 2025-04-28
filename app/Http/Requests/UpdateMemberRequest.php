@@ -25,7 +25,7 @@ class UpdateMemberRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:members,email,' . $this->member->id,
             'role' => 'required|in:user,admin',
-            'status' => 'required|in:enabled,disabled',
+            'status' => 'required|in:active,inactive',
         ];
     }
 }

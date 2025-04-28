@@ -24,9 +24,9 @@ class MemberController extends Controller
             ->paginate($perPage)
             ->withQueryString()
             ->through(function ($user) {
-                $latestReason = $user->status === 'disabled'
+                $latestReason = $user->status === 'inactive'
                     ? \App\Models\StatusLog::where('user_id', $user->id)
-                        ->where('status', 'disabled')
+                        ->where('status', 'inactive')
                         ->orderBy('changed_at', 'desc')
                         ->value('reason')
                     : null;
@@ -35,7 +35,7 @@ class MemberController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'status' => $user->status ?? 'enabled',
+                    'status' => $user->status ?? 'active',
                     'role' => $user->role ?? 'user',
                     'disable_reason' => $latestReason,
                 ];
@@ -69,7 +69,7 @@ class MemberController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'role' => 'required|in:user,admin',
-            'status' => 'required|in:enabled,disabled',
+            'status' => 'required|in:active,inactive',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -81,7 +81,7 @@ class MemberController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        if ($validated['status'] === 'disabled' && $request->has('reason')) {
+        if ($validated['status'] === 'inactive' && $request->has('reason')) {
             $reason = $request->input('reason');
             $reasonMap = [
                 'leave' => 'Member is on leave',
@@ -104,79 +104,79 @@ class MemberController extends Controller
     }
 
     public function update(Request $request, User $user)
-{
-    $rules = [];
+    {
+        $rules = [];
 
-    // Validation for name, email, and role if any are provided
-    if ($request->hasAny(['name', 'email', 'role'])) {
-        $rules = array_merge($rules, [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|in:user,admin',
-        ]);
-    }
+        // Validation for name, email, and role if any are provided
+        if ($request->hasAny(['name', 'email', 'role'])) {
+            $rules = array_merge($rules, [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+                'role' => 'required|in:user,admin',
+            ]);
+        }
 
-    // Validation for status and reason if status is provided
-    if ($request->has('status')) {
-        $rules['status'] = 'required|in:enabled,disabled';
-        $rules['reason'] = 'nullable|string|max:255';
-    }
+        // Validation for status and reason if status is provided
+        if ($request->has('status')) {
+            $rules['status'] = 'required|in:active,inactive';
+            $rules['reason'] = 'nullable|string|max:255';
+        }
 
-    // Validation for password fields only if password is provided
-    if ($request->filled('password')) {
-        $rules['old_password'] = ['required', function ($attribute, $value, $fail) use ($user) {
-            if (!Hash::check($value, $user->password)) {
-                $fail('The old password is incorrect.');
-            }
-        }];
-        $rules['password'] = 'required|string|min:8|confirmed';
-    }
+        // Validation for password fields only if password is provided
+        if ($request->filled('password')) {
+            $rules['old_password'] = ['required', function ($attribute, $value, $fail) use ($user) {
+                if (!Hash::check($value, $user->password)) {
+                    $fail('The old password is incorrect.');
+                }
+            }];
+            $rules['password'] = 'required|string|min:8|confirmed';
+        }
 
-    $validated = $request->validate($rules);
+        $validated = $request->validate($rules);
 
-    $reason = isset($validated['reason']) ? $validated['reason'] : null;
-    if ($reason) {
-        $reasonMap = [
-            'leave' => 'Member is on leave',
-            'security' => 'Security concern',
-            'offboarding' => 'Offboarding',
-            'transition' => 'Role/project transition',
-            'other' => 'Other',
-        ];
-        $reason = $reasonMap[$reason] ?? $reason;
-    }
+        $reason = isset($validated['reason']) ? $validated['reason'] : null;
+        if ($reason) {
+            $reasonMap = [
+                'leave' => 'Member is on leave',
+                'security' => 'Security concern',
+                'offboarding' => 'Offboarding',
+                'transition' => 'Role/project transition',
+                'other' => 'Other',
+            ];
+            $reason = $reasonMap[$reason] ?? $reason;
+        }
 
-    // Update fields only if they are provided in the validated data
-    if (isset($validated['name'])) {
-        $user->name = $validated['name'];
-    }
-    if (isset($validated['email'])) {
-        $user->email = $validated['email'];
-    }
-    if (isset($validated['status'])) {
-        $user->status = $validated['status'];
-    }
-    if (isset($validated['role'])) {
-        $user->role = $validated['role'];
-    }
-    if (isset($validated['password'])) {
-        $user->password = Hash::make($validated['password']);
-    }
+        // Update fields only if they are provided in the validated data
+        if (isset($validated['name'])) {
+            $user->name = $validated['name'];
+        }
+        if (isset($validated['email'])) {
+            $user->email = $validated['email'];
+        }
+        if (isset($validated['status'])) {
+            $user->status = $validated['status'];
+        }
+        if (isset($validated['role'])) {
+            $user->role = $validated['role'];
+        }
+        if (isset($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
 
-    // Log status change if a reason is provided
-    if ($reason && isset($validated['status'])) {
-        \App\Models\StatusLog::create([
-            'user_id' => $user->id,
-            'status' => $validated['status'],
-            'reason' => $reason,
-            'changed_at' => now(),
-        ]);
+        // Log status change if a reason is provided
+        if ($reason && isset($validated['status'])) {
+            \App\Models\StatusLog::create([
+                'user_id' => $user->id,
+                'status' => $validated['status'],
+                'reason' => $reason,
+                'changed_at' => now(),
+            ]);
+        }
+
+        $user->save();
+
+        return redirect()->route('members')->with('success', 'Member updated successfully!');
     }
-
-    $user->save();
-
-    return redirect()->route('members')->with('success', 'Member updated successfully!');
-}
 
     public function destroy(User $user)
     {

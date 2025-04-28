@@ -20,7 +20,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Member extends User {
-    status: 'enabled' | 'disabled';
+    status: 'active' | 'inactive';
     role: 'user' | 'admin';
     disable_reason?: string | null;
 }
@@ -77,7 +77,7 @@ export default function Members({
         name: '',
         email: '',
         role: 'user',
-        status: 'enabled',
+        status: 'active',
         password: '',
         password_confirmation: '',
         old_password: '',
@@ -87,7 +87,7 @@ export default function Members({
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
     const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
     const [isStatusDialogOpen, setIsStatusDialogOpen] = useState<boolean>(false);
-    const [statusChange, setStatusChange] = useState<{ id: number; newStatus: 'enabled' | 'disabled'; reason?: string } | null>(null);
+    const [statusChange, setStatusChange] = useState<{ id: number; newStatus: 'active' | 'inactive'; reason?: string } | null>(null);
     const [isSingleDeleteDialogOpen, setIsSingleDeleteDialogOpen] = useState<boolean>(false);
     const [deletingMemberId, setDeletingMemberId] = useState<number | null>(null);
 
@@ -135,13 +135,13 @@ export default function Members({
                 name: formData.name,
                 email: formData.email,
                 role: formData.role,
-                status: 'enabled',
+                status: 'active',
                 password: formData.password,
                 password_confirmation: formData.password_confirmation,
             },
             {
                 onSuccess: () => {
-                    setFormData({ name: '', email: '', role: 'user', status: 'enabled', password: '', password_confirmation: '', old_password: '' });
+                    setFormData({ name: '', email: '', role: 'user', status: 'active', password: '', password_confirmation: '', old_password: '' });
                     setIsAddDialogOpen(false);
                     setToast({ message: 'Member added successfully!', variant: 'success' });
                 },
@@ -155,7 +155,7 @@ export default function Members({
     const handleEditMember = () => {
         if (!editingMemberId) return;
         setErrors({});
-    
+
         // Prepare data to send, only include password fields if they are filled
         const updateData: {
             name: string;
@@ -171,7 +171,7 @@ export default function Members({
             role: formData.role,
             status: formData.status,
         };
-    
+
         // Only include old_password, password, and password_confirmation if they are provided
         if (formData.old_password) {
             updateData.old_password = formData.old_password;
@@ -182,13 +182,13 @@ export default function Members({
         if (formData.password_confirmation) {
             updateData.password_confirmation = formData.password_confirmation;
         }
-    
+
         router.patch(
             `/members/${editingMemberId}`,
             updateData,
             {
                 onSuccess: () => {
-                    setFormData({ name: '', email: '', role: 'user', status: 'enabled', password: '', password_confirmation: '', old_password: '' });
+                    setFormData({ name: '', email: '', role: 'user', status: 'active', password: '', password_confirmation: '', old_password: '' });
                     setEditingMemberId(null);
                     setToast({ message: 'Member updated successfully!', variant: 'success' });
                     setIsEditDialogOpen(false);
@@ -251,7 +251,7 @@ export default function Members({
         }
     };
 
-    const handleUpdateStatus = (id: number, newStatus: 'enabled' | 'disabled') => {
+    const handleUpdateStatus = (id: number, newStatus: 'active' | 'inactive') => {
         setStatusChange({ id, newStatus });
         setIsStatusDialogOpen(true);
     };
@@ -262,12 +262,12 @@ export default function Members({
             `/members/${statusChange.id}`,
             {
                 status: statusChange.newStatus,
-                ...(statusChange.newStatus === 'disabled' && statusChange.reason ? { reason: statusChange.reason } : {}),
+                ...(statusChange.newStatus === 'inactive' && statusChange.reason ? { reason: statusChange.reason } : {}),
             },
             {
                 onSuccess: () => {
                     setToast({
-                        message: `Member ${statusChange.newStatus === 'enabled' ? 'enabled' : 'disabled'} successfully!`,
+                        message: `Member ${statusChange.newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`,
                         variant: 'success',
                     });
                     setIsStatusDialogOpen(false);
@@ -320,7 +320,7 @@ export default function Members({
                                     name: '',
                                     email: '',
                                     role: 'user',
-                                    status: 'enabled',
+                                    status: 'active',
                                     password: '',
                                     password_confirmation: '',
                                     old_password: '',
@@ -362,7 +362,7 @@ export default function Members({
                                 name: '',
                                 email: '',
                                 role: 'user',
-                                status: 'enabled',
+                                status: 'active',
                                 password: '',
                                 password_confirmation: '',
                                 old_password: '',
@@ -446,7 +446,7 @@ export default function Members({
                                 name: '',
                                 email: '',
                                 role: 'user',
-                                status: 'enabled',
+                                status: 'active',
                                 password: '',
                                 password_confirmation: '',
                                 old_password: '',
@@ -564,13 +564,13 @@ export default function Members({
                         <DialogHeader>
                             <DialogTitle>Confirm Status Change</DialogTitle>
                             <DialogDescription>
-                                {statusChange?.newStatus === 'enabled'
-                                    ? 'Enabling this member will allow them to log in and use the system.'
-                                    : 'Disabling this member will prevent them from logging in or accessing the system.'}
+                                {statusChange?.newStatus === 'active'
+                                    ? 'Activating this member will allow them to log in and use the system.'
+                                    : 'Deactivating this member will prevent them from logging in or accessing the system.'}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="py-4">
-                            {statusChange?.newStatus === 'enabled' ? (
+                            {statusChange?.newStatus === 'active' ? (
                                 <Input
                                     type="text"
                                     value={initialMembers.data.find((m) => m.id === statusChange.id)?.disable_reason || 'No reason provided'}
@@ -603,7 +603,7 @@ export default function Members({
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={confirmStatusChange}>{statusChange?.newStatus === 'enabled' ? 'Enable' : 'Disable'}</Button>
+                            <Button onClick={confirmStatusChange}>{statusChange?.newStatus === 'active' ? 'Activate' : 'Deactivate'}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

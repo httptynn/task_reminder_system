@@ -25,7 +25,7 @@ class StoreMemberRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:members,email',
             'role' => 'required|in:user,admin',
-            'status' => 'required|in:enabled,disabled',
+            'status' => 'required|in:active,inactive',
         ];
     }
 }
