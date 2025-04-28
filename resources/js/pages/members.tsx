@@ -1,4 +1,3 @@
-// members.tsx
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -22,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface Member extends User {
     role: 'user' | 'admin';
-    created_at: string; // Add created_at
+    created_at: string;
 }
 
 interface PageProps {
@@ -39,7 +38,6 @@ interface PageProps {
     };
     editMember?: Member;
     search?: string;
-    statusReasons?: string[];
     [key: string]: any;
 }
 
@@ -47,12 +45,10 @@ export default function Members({
     members: initialMembers,
     editMember,
     search,
-    statusReasons = [],
 }: {
     members: PageProps['members'];
     editMember?: Member;
     search?: string;
-    statusReasons?: string[];
 }) {
     const { flash } = usePage<PageProps>().props;
     const [searchTerm, setSearchTerm] = useState<string>(search || '');

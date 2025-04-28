@@ -46,7 +46,7 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
         {/* Header Row */}
         <div className="flex px-4 py-3 font-medium text-sm uppercase text-foreground bg-chart-2/20 min-h-[48px] w-full">
           <div className="flex-1 pl-4 min-w-[200px] flex items-center">Task</div>
-          <div className="flex-1 pl-10  min-w-[180px] flex items-center leading-none">Started Date</div>
+          <div className="flex-1 pl-10 min-w-[180px] flex items-center leading-none">Started Date</div>
           <div className="flex-1 pl-8 pr-2 min-w-[180px] flex items-center leading-none">Due Date</div>
           <div className="flex-1 pl-5 pr-6 min-w-[120px] flex items-center leading-none">Assignee</div>
           <div className="flex-1 pl-4 pr-4 min-w-[120px] flex items-center">Task Status</div>
@@ -58,10 +58,12 @@ export default function TasksTable({ tasks, handleEdit, handleDelete, onPageChan
             No tasks available.
           </div>
         ) : (
-          tasks.map((task) => (
+          tasks.map((task, index) => (
             <div
               key={task.id}
-              className="flex px-4 py-3 hover:bg-muted min-h-[48px] w-full"
+              className={`flex px-4 py-3  min-h-[48px] w-full ${
+                index % 2 === 0 ? 'bg-white' : 'bg-gray-100'
+              }`}
             >
               <div className="flex-1 pl-4 pr-6 text-sm text-foreground font-medium min-w-[200px] flex items-center shrink-0">
                 <div

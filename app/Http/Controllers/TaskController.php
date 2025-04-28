@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Task;
+use App\Models\Notification; // Add this import for Notification model
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
@@ -81,47 +82,97 @@ class TaskController extends Controller
             'created_by' => auth()->id(),
         ]);
 
+        // Notify assignee
+        Notification::create([
+            'user_id' => auth()->id(),
+            'recipient_id' => $task->assignee_id,
+            'message' => "New task assigned: '{$task->title}' due on {$task->due_date_time->format('Y-m-d H:i')}.",
+            'is_read' => false,
+        ]);
+
+        // Notify admins
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::create([
+                'user_id' => auth()->id(),
+                'recipient_id' => $admin->id,
+                'message' => "system: New task '{$task->title}' assigned to " . User::find($task->assignee_id)->name . ".",
+                'is_read' => false,
+            ]);
+        }
+
         return redirect()->route('assignee.index')->with('success', 'Task created successfully!');
     }
 
     public function update(Request $request, Task $task)
-{
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'required|string',
-        'attached_file' => 'nullable|file|max:10240',
-        'assignee_id' => 'required|exists:users,id',
-        'due_date_time' => 'required|date',
-        'started_date' => 'required|date',
-        'status' => 'required|in:pending,on progress,done,overdue',
-        'remove_file' => 'nullable|in:1', // Validates the remove_file flag
-    ]);
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'attached_file' => 'nullable|file|max:10240',
+            'assignee_id' => 'required|exists:users,id',
+            'due_date_time' => 'required|date',
+            'started_date' => 'required|date',
+            'status' => 'required|in:pending,on progress,done,overdue',
+            'remove_file' => 'nullable|in:1',
+        ]);
 
-    $filePath = $task->attached_file;
-    if ($request->input('remove_file') == '1') {
-        if ($filePath) {
-            Storage::disk('public')->delete($filePath);
-            $filePath = null;
+        $filePath = $task->attached_file;
+        if ($request->input('remove_file') == '1') {
+            if ($filePath) {
+                Storage::disk('public')->delete($filePath);
+                $filePath = null;
+            }
+        } elseif ($request->hasFile('attached_file')) {
+            if ($filePath) {
+                Storage::disk('public')->delete($filePath);
+            }
+            $filePath = $request->file('attached_file')->store('task_files', 'public');
         }
-    } elseif ($request->hasFile('attached_file')) {
-        if ($filePath) {
-            Storage::disk('public')->delete($filePath);
+
+        $task->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'attached_file' => $filePath,
+            'assignee_id' => $validated['assignee_id'],
+            'due_date_time' => $validated['due_date_time'],
+            'started_date' => $validated['started_date'],
+            'status' => $validated['status'],
+        ]);
+
+        // Notify assignee if reassigned
+        if ($task->wasChanged('assignee_id')) {
+            Notification::create([
+                'user_id' => auth()->id(),
+                'recipient_id' => $task->assignee_id,
+                'message' => "Task reassigned to you: '{$task->title}' due on {$task->due_date_time->format('Y-m-d H:i')}.",
+                'is_read' => false,
+            ]);
         }
-        $filePath = $request->file('attached_file')->store('task_files', 'public');
+
+        // Notify if status changed
+        if ($task->wasChanged('status')) {
+            Notification::create([
+                'user_id' => auth()->id(),
+                'recipient_id' => $task->assignee_id,
+                'message' => "Task '{$task->title}' status updated to {$task->status}.",
+                'is_read' => false,
+            ]);
+
+            // Notify admins
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => auth()->id(),
+                    'recipient_id' => $admin->id,
+                    'message' => "system: Task '{$task->title}' status updated to {$task->status} for " . User::find($task->assignee_id)->name . ".",
+                    'is_read' => false,
+                ]);
+            }
+        }
+
+        return redirect()->route('assignee.index')->with('success', 'Task updated successfully!');
     }
-
-    $task->update([
-        'title' => $validated['title'],
-        'description' => $validated['description'],
-        'attached_file' => $filePath,
-        'assignee_id' => $validated['assignee_id'],
-        'due_date_time' => $validated['due_date_time'],
-        'started_date' => $validated['started_date'],
-        'status' => $validated['status'],
-    ]);
-
-    return redirect()->route('assignee.index')->with('success', 'Task updated successfully!');
-}
 
     public function destroy(Task $task)
     {
@@ -147,4 +198,4 @@ class TaskController extends Controller
             'status' => $task->status,
         ];
     }
-}   
+}
