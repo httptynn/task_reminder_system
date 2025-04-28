@@ -45,6 +45,7 @@ class DashboardController extends Controller
                 return [
                     'id' => $task->id,
                     'title' => $task->title,
+                    'description' => $task->description, // Add description
                     'status' => $task->status,
                     'due_date_time' => $task->due_date_time?->toISOString() ?? null,
                     'assignee' => $task->assignee ? $task->assignee->name : 'Unknown',
