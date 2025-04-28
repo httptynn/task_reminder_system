@@ -3,24 +3,19 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BellDot, BellDotIcon, Calendar, List, UsersRound } from 'lucide-react';
+import { BellDot, List } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Task',
-        href: '/dashboard',
+        href: '/Task',
         icon: List,
     },
     {
-        title: 'Notification',
-        href: '/members',
+        title: 'Notifications',
+        href: '/Notifications',
         icon: BellDot,
-    },
-    {
-        title: 'Calendar',
-        href: '/calendar',
-        icon: Calendar,
     },
 ];
 
@@ -31,7 +26,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
+                            <Link href="/Task" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

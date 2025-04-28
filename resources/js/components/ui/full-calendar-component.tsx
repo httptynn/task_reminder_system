@@ -1,5 +1,5 @@
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
+import FullNotification from '@fullNotification/react';
+import dayGridPlugin from '@fullNotification/daygrid';
 import { useState, useEffect } from 'react';
 import {
     Dialog,
@@ -22,12 +22,12 @@ interface Event {
     status?: 'pending' | 'done' | 'overdue';
 }
 
-interface FullCalendarComponentProps {
+interface FullNotificationComponentProps {
     initialEvents?: Event[];
     onEventUpdate?: (updatedEvent: Event) => void;
 }
 
-export default function FullCalendarComponent({ initialEvents = [], onEventUpdate }: FullCalendarComponentProps) {
+export default function FullNotificationComponent({ initialEvents = [], onEventUpdate }: FullNotificationComponentProps) {
     const [events, setEvents] = useState<Event[]>(initialEvents);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [editFormData, setEditFormData] = useState({
@@ -103,7 +103,7 @@ export default function FullCalendarComponent({ initialEvents = [], onEventUpdat
 
     return (
         <div className="h-full w-full">
-            <FullCalendar
+            <FullNotification
                 plugins={[dayGridPlugin]}
                 initialView="dayGridMonth"
                 events={events.map((event) => ({

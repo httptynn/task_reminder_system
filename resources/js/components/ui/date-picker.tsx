@@ -1,7 +1,7 @@
 // import * as React from "react";
 // import { cn } from "@/lib/utils";
 // import DatePicker from "react-datepicker";
-// import { Calendar, Clock } from "lucide-react";
+// import { Notificationtion, Clock } from "lucide-react";
 // import "react-datepicker/dist/react-datepicker.css";
 // // Import the en-US locale from date-fns
 // import { registerLocale } from "react-datepicker";
@@ -49,7 +49,7 @@
 //         locale="en-US" // This now works because the locale is registered
 //         ariaLabelledBy={ariaLabelledBy}
 //       />
-//       <Calendar className="h-4 w-4 text-muted-foreground absolute right-8 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+//       <Notification className="h-4 w-4 text-muted-foreground absolute right-8 top-1/2 transform -translate-y-1/2 pointer-events-none" />
 //       <Clock className="h-4 w-4 text-muted-foreground absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
 //     </div>
 //   );
@@ -60,7 +60,7 @@
 
 import { cn } from "@/lib/utils";
 import ReactDatePicker from "react-datepicker";
-import { Calendar } from "lucide-react";
+import { Notification } from "lucide-react";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import { enUS } from "date-fns/locale/en-US";
@@ -111,7 +111,7 @@ function DatePicker({
         aria-labelledby={ariaLabelledBy}
         {...rest}
       />
-      <Calendar className="h-4 w-4 text-muted-foreground absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+      <Notification className="h-4 w-4 text-muted-foreground absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none" />
     </div>
   );
 }

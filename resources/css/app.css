@@ -159,21 +159,21 @@
 }
 
 @layer components {
-    /* Calendar styles (unchanged) */
-    .react-calendar {
+    /* Notification styles (unchanged) */
+    .react-Notification {
       @apply rounded-md border border-border bg-background text-foreground;
       padding: 0.5rem;
     }
-    .react-calendar__tile {
+    .react-Notification__tile {
       @apply text-foreground;
     }
-    .react-calendar__tile--active {
+    .react-Notificationtion__tile--active {
       @apply bg-primary text-primary-foreground;
     }
-    .react-calendar__tile--now {
+    .react-Notification__tile--now {
       @apply bg-muted;
     }
-    .react-calendar__navigation button {
+    .react-Notification__navigation button {
       @apply text-foreground hover:bg-muted;
     }
   
@@ -266,19 +266,19 @@
       color: #ffffff; /* White numbers for visibility */
     }
   
-    /* Dark mode for calendar */
-    /* .dark .react-calendar {
+    /* Dark mode for Notification */
+    /* .dark .react-Notification {
       background: #1f2937;
       color: #ffffff;
     }
-    .dark .react-calendar__tile {
+    .dark .react-Notification__tile {
       color: #ffffff;
     }
-    .dark .react-calendar__tile--active {
+    .dark .react-Notificationtion__tile--active {
       background: #3b82f6;
       color: #ffffff;
     }
-    .dark .react-calendar__tile--now {
+    .dark .react-Notification__tile--now {
       background: #4b5563;
       color: #ffffff;
     } */

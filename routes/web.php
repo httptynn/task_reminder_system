@@ -11,23 +11,18 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('Task', function () {
+        return Inertia::render('Task');
+    })->name('Task');
 
     Route::get('members', function () {
         $members = User::all(); // Fetch all users
         return Inertia::render('members', ['members' => $members]);
     })->middleware('role:admin')->name('members');
 
-    Route::get('calendar', function () {
-        return Inertia::render('calendar');
-    })->name('calendar');
-
-    Route::get('notifications', function () {
-        $notifications = User::all();
-        return Inertia::render('notifications', ['notifications' => $notifications]);
-    })->middleware('role:admin')->name('notifications');
+    Route::get('Notification', function () {
+        return Inertia::render('Notification');
+    })->name('Notification');
 
     Route::get('assignee', function () {
         return Inertia::render('assignee');

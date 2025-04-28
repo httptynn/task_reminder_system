@@ -8,8 +8,8 @@ import { Head, Link, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
+        title: 'Task',
+        href: '/Task',
     },
     {
         title: 'Profile',

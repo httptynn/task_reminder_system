@@ -100,10 +100,10 @@ export default function Welcome() {
                         <nav className="mt-20 flex w-full flex-col items-center gap-4">
                             {auth.user ? (
                                 <Link
-                                    href={route('dashboard')}
+                                    href={route('Task')}
                                     className="relative z-20 inline-block w-full max-w-[300px] rounded-xl border border-[#036BFF] bg-gradient-to-r from-[#036BFF]/70 via-[#1A1A31] to-[#0D1226] px-10 py-3 text-center text-base font-semibold text-white shadow-[0_0_6px_#036BFF66] transition-all duration-200 hover:bg-[#036BFF]/80"
                                 >
-                                    Dashboard
+                                    Task
                                 </Link>
                             ) : (
                                 <>

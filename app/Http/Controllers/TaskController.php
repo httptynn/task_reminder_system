@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Inertia\Inertia;
 
-class DashboardController extends Controller
+class TaskController extends Controller
 {
     public function index()
     {
@@ -13,7 +13,7 @@ class DashboardController extends Controller
             ->with('admin')
             ->get();
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('Task', [
             'auth' => auth()->user(),
             'tasks' => $tasks,
         ]);
