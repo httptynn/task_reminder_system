@@ -183,18 +183,18 @@ export function MembersTable({
               </div>
               <div className="flex-1 text-sm underline">{member.email}</div>
               <div className="flex-1 relative group">
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${
-                    member.status === 'active'
-                      ? 'bg-green-100 text-chart-2'
-                      : 'bg-red-100 text-red-600'
-                  }`}
-                  onClick={() =>
-                    onUpdateStatus(member.id, member.status === 'active' ? 'inactive' : 'active')
-                  }
-                >
-                  {member.status === 'active' ? 'Active' : 'Inactive'}
-                </span>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${
+                  member.status === 'active'
+                    ? 'bg-green-100 text-chart-2'
+                    : 'bg-red-100 text-red-600'
+                }`}
+                onClick={() =>
+                  onUpdateStatus(member.id, member.status === 'active' ? 'inactive' : 'active')
+                }
+              >
+                {member.status === 'active' ? 'Active' : 'Inactive'}
+              </span>
                 <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 w-64">
                   {member.status === 'active'
                     ? 'Active: User can log in. Deactivate to block access (e.g., for leave or security).'

@@ -27,12 +27,6 @@ const mainNavItems: NavItem[] = [
     },
 
     {
-        title: 'Calendar',
-        href: '/calendar',
-        icon: Calendar,
-    },
-
-    {
         title: 'Notifications',
         href: '/notifications',
         icon: Bell,

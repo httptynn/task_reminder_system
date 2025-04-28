@@ -86,8 +86,6 @@ export default function Members({
     const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
     const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
-    const [isStatusDialogOpen, setIsStatusDialogOpen] = useState<boolean>(false);
-    const [statusChange, setStatusChange] = useState<{ id: number; newStatus: 'active' | 'inactive'; reason?: string } | null>(null);
     const [isSingleDeleteDialogOpen, setIsSingleDeleteDialogOpen] = useState<boolean>(false);
     const [deletingMemberId, setDeletingMemberId] = useState<number | null>(null);
 
@@ -156,7 +154,6 @@ export default function Members({
         if (!editingMemberId) return;
         setErrors({});
 
-        // Prepare data to send, only include password fields if they are filled
         const updateData: {
             name: string;
             email: string;
@@ -172,7 +169,6 @@ export default function Members({
             status: formData.status,
         };
 
-        // Only include old_password, password, and password_confirmation if they are provided
         if (formData.old_password) {
             updateData.old_password = formData.old_password;
         }
@@ -252,26 +248,15 @@ export default function Members({
     };
 
     const handleUpdateStatus = (id: number, newStatus: 'active' | 'inactive') => {
-        setStatusChange({ id, newStatus });
-        setIsStatusDialogOpen(true);
-    };
-
-    const confirmStatusChange = () => {
-        if (!statusChange) return;
         router.patch(
-            `/members/${statusChange.id}`,
-            {
-                status: statusChange.newStatus,
-                ...(statusChange.newStatus === 'inactive' && statusChange.reason ? { reason: statusChange.reason } : {}),
-            },
+            `/members/${id}`,
+            { status: newStatus },
             {
                 onSuccess: () => {
                     setToast({
-                        message: `Member ${statusChange.newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`,
+                        message: `Member ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`,
                         variant: 'success',
                     });
-                    setIsStatusDialogOpen(false);
-                    setStatusChange(null);
                 },
                 onError: (errors) => {
                     console.error('Status update failed:', errors);
@@ -396,12 +381,18 @@ export default function Members({
                                 <InputError message={errors.email} />
                             </div>
                             <div>
-                                <Input
-                                    type="text"
-                                    placeholder="Role"
-                                    value={formData.role === 'user' ? 'Member' : 'Admin'}
-                                    className="text-foreground cursor-not-allowed border-gray-300 focus:border-gray-300 focus:ring-0"
-                                />
+                                <Select
+                                    onValueChange={(value) => setFormData({ ...formData, role: value })}
+                                    value={formData.role}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="user">Member</SelectItem>
+                                        <SelectItem value="admin">Admin</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <InputError message={errors.role} />
                             </div>
                             <div>
@@ -480,12 +471,18 @@ export default function Members({
                                 <InputError message={errors.email} />
                             </div>
                             <div>
-                                <Input
-                                    type="text"
-                                    placeholder="Role"
-                                    value={formData.role === 'user' ? 'Member' : 'Admin'}
-                                    className="cursor-not-allowed"
-                                />
+                                <Select
+                                    onValueChange={(value) => setFormData({ ...formData, role: value })}
+                                    value={formData.role}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="user">Member</SelectItem>
+                                        <SelectItem value="admin">Admin</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <InputError message={errors.role} />
                             </div>
                             <div>
@@ -556,54 +553,6 @@ export default function Members({
                             <Button onClick={confirmSingleDelete} variant="destructive">
                                 Delete
                             </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-                <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Confirm Status Change</DialogTitle>
-                            <DialogDescription>
-                                {statusChange?.newStatus === 'active'
-                                    ? 'Activating this member will allow them to log in and use the system.'
-                                    : 'Deactivating this member will prevent them from logging in or accessing the system.'}
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="py-4">
-                            {statusChange?.newStatus === 'active' ? (
-                                <Input
-                                    type="text"
-                                    value={initialMembers.data.find((m) => m.id === statusChange.id)?.disable_reason || 'No reason provided'}
-                                    disabled
-                                    className="cursor-not-allowed opacity-70"
-                                />
-                            ) : (
-                                <Select
-                                    onValueChange={(value) => setStatusChange({ ...statusChange!, reason: value })}
-                                    value={statusChange?.reason || ''}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a reason (optional)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {statusReasons.map((reason) => (
-                                            <SelectItem key={reason} value={reason}>
-                                                {reason}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
-                        </div>
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                className="border-green-600 text-green-600 hover:text-green-600/90"
-                                onClick={() => setIsStatusDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button onClick={confirmStatusChange}>{statusChange?.newStatus === 'active' ? 'Activate' : 'Deactivate'}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

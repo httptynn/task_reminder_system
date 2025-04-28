@@ -21,6 +21,7 @@ class MemberController extends Controller
                       ->orWhere('email', 'like', "%{$search}%");
             })
             ->whereIn('role', ['user', 'admin'])
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->withQueryString()
             ->through(function ($user) {
