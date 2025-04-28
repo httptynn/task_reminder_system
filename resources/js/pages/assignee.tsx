@@ -541,7 +541,7 @@ import { Task, type BreadcrumbItem } from '@/types';
 import { PageProps } from '@inertiajs/core';
 import { Head, router, usePage } from '@inertiajs/react';
 import dayjs, { Dayjs } from 'dayjs';
-import { FilePlusIcon, Search, SlidersHorizontal } from 'lucide-react';
+import { FilePlusIcon, Search, SlidersHorizontal, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { debounce } from 'lodash';
 import {
@@ -583,6 +583,7 @@ export default function Assignee() {
     const [attachedFile, setAttachedFile] = useState<File | null>(null);
     const [existingFile, setExistingFile] = useState<string | null>(null);
     const [removeFile, setRemoveFile] = useState(false);
+    const [showUploadAnother, setShowUploadAnother] = useState(false); // New state to toggle upload field
     const [assigneeId, setAssigneeId] = useState<string>('');
     const [dueDateTime, setDueDateTime] = useState<Dayjs | null>(null);
     const [startedDate, setStartedDate] = useState<Dayjs | null>(null);
@@ -619,7 +620,8 @@ export default function Assignee() {
 
     const handleFileSelect = (file: File | null) => {
         setAttachedFile(file);
-        setRemoveFile(false); // Reset removeFile when a new file is selected
+        setRemoveFile(true); // Mark existing file for removal when a new file is selected
+        setShowUploadAnother(false); // Hide the upload field after selecting a file
     };
 
     const handleDateChange = (date: Date) => {
@@ -753,6 +755,7 @@ export default function Assignee() {
                 setAttachedFile(null);
                 setExistingFile(null);
                 setRemoveFile(false);
+                setShowUploadAnother(false);
                 setAssigneeId('');
                 setDueDateTime(null);
                 setStartedDate(null);
@@ -813,6 +816,7 @@ export default function Assignee() {
         setAttachedFile(null);
         setExistingFile(task.attached_file);
         setRemoveFile(false);
+        setShowUploadAnother(false);
         setAssigneeId(task.assignee_id ? task.assignee_id.toString() : '');
         setDueDateTime(task.due_date_time ? dayjs(task.due_date_time) : null);
         setStartedDate(task.started_date_time ? dayjs(task.started_date_time) : null);
@@ -883,10 +887,11 @@ export default function Assignee() {
                                             setAttachedFile(null);
                                             setExistingFile(null);
                                             setRemoveFile(false);
+                                            setShowUploadAnother(false);
                                             setAssigneeId('');
                                             setDueDateTime(null);
                                             setStartedDate(null);
-                                            setStatus('pending0: pending');
+                                            setStatus('pending');
                                             setEditingTaskId(null);
                                             setTitleError(undefined);
                                             setDescriptionError(undefined);
@@ -1032,7 +1037,7 @@ export default function Assignee() {
                                                 </div>
                                                 <div>
                                                     <label className="text-foreground text-sm font-medium">File Attachment</label>
-                                                    {existingFile && !removeFile && (
+                                                    {existingFile && !removeFile && !showUploadAnother && (
                                                         <div className="mt-1 flex items-center gap-2">
                                                             <a
                                                                 href={existingFile}
@@ -1045,6 +1050,15 @@ export default function Assignee() {
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
+                                                                onClick={() => setShowUploadAnother(true)}
+                                                                className="text-green-600 border-green-600 hover:bg-600/90 hover:text-green-600"
+                                                            >
+                                                                <Upload className="h-4 w-4 mr-1" />
+                                                                Change File
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
                                                                 onClick={() => setRemoveFile(true)}
                                                                 className="text-red-600 border-red-600 hover:bg-red-50"
                                                             >
@@ -1052,7 +1066,7 @@ export default function Assignee() {
                                                             </Button>
                                                         </div>
                                                     )}
-                                                    {(!existingFile || removeFile) && (
+                                                    {(showUploadAnother || !existingFile || removeFile) && (
                                                         <FileUpload onFileSelect={handleFileSelect} className="mt-1 w-full" />
                                                     )}
                                                 </div>

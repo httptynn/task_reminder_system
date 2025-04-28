@@ -96,7 +96,7 @@ export default function Dashboard({ stats = { pending: 0, done: 0, overdue: 0, o
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 bg-sidebar">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <Card className='bg-purple-200'>
                         <CardHeader>
