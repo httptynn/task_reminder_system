@@ -85,55 +85,43 @@ class TaskController extends Controller
     }
 
     public function update(Request $request, Task $task)
-    {
-        // Log raw input
-        Log::info('Raw request input:', ['input' => $request->getContent()]);
-        // Log parsed request data
-        Log::info('Parsed request data:', $request->all());
-        // Log specific fields
-        Log::info('Form fields:', [
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-            'assignee_id' => $request->input('assignee_id'),
-            'due_date_time' => $request->input('due_date_time'),
-            'started_date' => $request->input('started_date'),
-            'status' => $request->input('status'),
-            'attached_file' => $request->hasFile('attached_file') ? 'File present' : 'No file',
-            '_method' => $request->input('_method'),
-        ]);
-        // Log headers
-        Log::info('Request headers:', $request->headers->all());
+{
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'attached_file' => 'nullable|file|max:10240',
+        'assignee_id' => 'required|exists:users,id',
+        'due_date_time' => 'required|date',
+        'started_date' => 'required|date',
+        'status' => 'required|in:pending,on progress,done,overdue',
+        'remove_file' => 'nullable|in:1', // Validates the remove_file flag
+    ]);
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'attached_file' => 'nullable|file|max:10240',
-            'assignee_id' => 'required|exists:users,id',
-            'due_date_time' => 'required|date',
-            'started_date' => 'required|date',
-            'status' => 'required|in:pending,on progress,done,overdue',
-        ]);
-
-        $filePath = $task->attached_file;
-        if ($request->hasFile('attached_file')) {
-            if ($filePath) {
-                Storage::disk('public')->delete($filePath);
-            }
-            $filePath = $request->file('attached_file')->store('task_files', 'public');
+    $filePath = $task->attached_file;
+    if ($request->input('remove_file') == '1') {
+        if ($filePath) {
+            Storage::disk('public')->delete($filePath);
+            $filePath = null;
         }
-
-        $task->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'attached_file' => $filePath,
-            'assignee_id' => $validated['assignee_id'],
-            'due_date_time' => $validated['due_date_time'],
-            'started_date' => $validated['started_date'],
-            'status' => $validated['status'],
-        ]);
-
-        return redirect()->route('assignee.index')->with('success', 'Task updated successfully!');
+    } elseif ($request->hasFile('attached_file')) {
+        if ($filePath) {
+            Storage::disk('public')->delete($filePath);
+        }
+        $filePath = $request->file('attached_file')->store('task_files', 'public');
     }
+
+    $task->update([
+        'title' => $validated['title'],
+        'description' => $validated['description'],
+        'attached_file' => $filePath,
+        'assignee_id' => $validated['assignee_id'],
+        'due_date_time' => $validated['due_date_time'],
+        'started_date' => $validated['started_date'],
+        'status' => $validated['status'],
+    ]);
+
+    return redirect()->route('assignee.index')->with('success', 'Task updated successfully!');
+}
 
     public function destroy(Task $task)
     {
