@@ -17,11 +17,7 @@ const mainNavItems: NavItem[] = [
         href: '/members',
         icon: BellDot,
     },
-    {
-        title: 'Calendar',
-        href: '/calendar',
-        icon: Calendar,
-    },
+   
 ];
 
 export function AppSidebar() {
