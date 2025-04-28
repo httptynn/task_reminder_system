@@ -21,7 +21,7 @@ class NotificationController extends Controller
             ->where('recipient_id', $user->id)
             ->with('user')
             ->when($filter === 'unread', function ($query) {
-                $query->where('read', false);
+                $query->where('is_read', false);
             });
 
         if ($isAdmin) {
@@ -59,7 +59,7 @@ class NotificationController extends Controller
                         'updated_at' => now()->toIso8601String(),
                     ],
                     'message' => $notification->message,
-                    'read' => $notification->read,
+                    'read' => $notification->is_read, // Map is_read to read for frontend
                     'time' => $notification->created_at->toIso8601String(),
                 ];
             });
@@ -77,14 +77,14 @@ class NotificationController extends Controller
         $user = Auth::user();
 
         Notification::where('recipient_id', $user->id)
-            ->where('read', false)
-            ->update(['read' => true]);
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
 
         if ($user->role === 'admin') {
             Notification::whereNull('recipient_id')
                 ->where('message', 'like', '%system:%')
-                ->where('read', false)
-                ->update(['read' => true]);
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
         }
 
         return redirect()->route('notifications', [
@@ -104,7 +104,7 @@ class NotificationController extends Controller
             ])->with('error', 'Unauthorized to mark this notification as read.');
         }
 
-        $notification->update(['read' => true]);
+        $notification->update(['is_read' => true]);
 
         return redirect()->route('notifications', [
             'filter' => $request->query('filter'),
