@@ -1,3 +1,4 @@
+// members.tsx
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -20,9 +21,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Member extends User {
-    status: 'active' | 'inactive';
     role: 'user' | 'admin';
-    disable_reason?: string | null;
+    created_at: string; // Add created_at
 }
 
 interface PageProps {
@@ -60,7 +60,6 @@ export default function Members({
         name?: string;
         email?: string;
         role?: string;
-        status?: string;
         password?: string;
         password_confirmation?: string;
         old_password?: string;
@@ -69,7 +68,6 @@ export default function Members({
         name: string;
         email: string;
         role: string;
-        status: string;
         password: string;
         password_confirmation: string;
         old_password: string;
@@ -77,7 +75,6 @@ export default function Members({
         name: '',
         email: '',
         role: 'user',
-        status: 'active',
         password: '',
         password_confirmation: '',
         old_password: '',
@@ -115,7 +112,6 @@ export default function Members({
                 name: editMember.name,
                 email: editMember.email,
                 role: editMember.role,
-                status: editMember.status,
                 password: '',
                 password_confirmation: '',
                 old_password: '',
@@ -133,13 +129,12 @@ export default function Members({
                 name: formData.name,
                 email: formData.email,
                 role: formData.role,
-                status: 'active',
                 password: formData.password,
                 password_confirmation: formData.password_confirmation,
             },
             {
                 onSuccess: () => {
-                    setFormData({ name: '', email: '', role: 'user', status: 'active', password: '', password_confirmation: '', old_password: '' });
+                    setFormData({ name: '', email: '', role: 'user', password: '', password_confirmation: '', old_password: '' });
                     setIsAddDialogOpen(false);
                     setToast({ message: 'Member added successfully!', variant: 'success' });
                 },
@@ -158,7 +153,6 @@ export default function Members({
             name: string;
             email: string;
             role: string;
-            status: string;
             old_password?: string;
             password?: string;
             password_confirmation?: string;
@@ -166,7 +160,6 @@ export default function Members({
             name: formData.name,
             email: formData.email,
             role: formData.role,
-            status: formData.status,
         };
 
         if (formData.old_password) {
@@ -184,7 +177,7 @@ export default function Members({
             updateData,
             {
                 onSuccess: () => {
-                    setFormData({ name: '', email: '', role: 'user', status: 'active', password: '', password_confirmation: '', old_password: '' });
+                    setFormData({ name: '', email: '', role: 'user', password: '', password_confirmation: '', old_password: '' });
                     setEditingMemberId(null);
                     setToast({ message: 'Member updated successfully!', variant: 'success' });
                     setIsEditDialogOpen(false);
@@ -247,34 +240,11 @@ export default function Members({
         }
     };
 
-    const handleUpdateStatus = (id: number, newStatus: 'active' | 'inactive') => {
-        router.patch(
-            `/members/${id}`,
-            { status: newStatus },
-            {
-                onSuccess: () => {
-                    setToast({
-                        message: `Member ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`,
-                        variant: 'success',
-                    });
-                },
-                onError: (errors) => {
-                    console.error('Status update failed:', errors);
-                    setToast({
-                        message: 'Failed to update member status: ' + (errors.status || 'Validation error'),
-                        variant: 'error',
-                    });
-                },
-            },
-        );
-    };
-
     const handleEditClick = (member: Member) => {
         setFormData({
             name: member.name,
             email: member.email,
             role: member.role,
-            status: member.status,
             password: '',
             password_confirmation: '',
             old_password: '',
@@ -305,7 +275,6 @@ export default function Members({
                                     name: '',
                                     email: '',
                                     role: 'user',
-                                    status: 'active',
                                     password: '',
                                     password_confirmation: '',
                                     old_password: '',
@@ -332,7 +301,6 @@ export default function Members({
                 <div className="flex-1">
                     <MembersTable
                         members={initialMembers}
-                        onUpdateStatus={handleUpdateStatus}
                         onEditMember={handleEditClick}
                         onDeleteMember={handleDeleteSingleMember}
                         onPageChange={handlePageChange}
@@ -347,7 +315,6 @@ export default function Members({
                                 name: '',
                                 email: '',
                                 role: 'user',
-                                status: 'active',
                                 password: '',
                                 password_confirmation: '',
                                 old_password: '',
@@ -437,7 +404,6 @@ export default function Members({
                                 name: '',
                                 email: '',
                                 role: 'user',
-                                status: 'active',
                                 password: '',
                                 password_confirmation: '',
                                 old_password: '',

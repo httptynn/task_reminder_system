@@ -130,6 +130,7 @@
 //   );
 // }
 
+// members-table.tsx
 import { Button } from '@/components/ui/button';
 import { UserInfo } from '@/components/user-info';
 import { UserRoundPen, Trash2 } from 'lucide-react';
@@ -137,8 +138,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { type User } from '@/types';
 
 interface Member extends User {
-  status: 'active' | 'inactive';
   role: 'user' | 'admin';
+  created_at: string; // Add created_at to the interface
 }
 
 interface MembersTableProps {
@@ -149,7 +150,7 @@ interface MembersTableProps {
     per_page: number;
     total: number;
   };
-  onUpdateStatus: (id: number, newStatus: 'active' | 'inactive') => void;
+  onUpdateStatus?: (id: number, newStatus: 'active' | 'inactive') => void; // Make optional
   onEditMember: (member: Member) => void;
   onDeleteMember: (id: number) => void;
   onPageChange: (page: number) => void;
@@ -157,7 +158,6 @@ interface MembersTableProps {
 
 export function MembersTable({
   members,
-  onUpdateStatus,
   onEditMember,
   onDeleteMember,
   onPageChange,
@@ -168,7 +168,7 @@ export function MembersTable({
         <div className="flex items-center px-4 py-3 font-medium text-sm uppercase text-[#1E1E1E] bg-blue-200">
           <div className="flex-1 pl-4">Name</div>
           <div className="flex-1">Email</div>
-          <div className="flex-1 relative group">Status</div>
+          <div className="flex-1">Added At</div> {/* Change Status to Added At */}
           <div className="flex-1">Role</div>
           <div className="w-24">Actions</div>
         </div>
@@ -182,24 +182,8 @@ export function MembersTable({
                 <UserInfo user={member} showEmail={false} />
               </div>
               <div className="flex-1 text-sm underline">{member.email}</div>
-              <div className="flex-1 relative group">
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${
-                  member.status === 'active'
-                    ? 'bg-green-100 text-chart-2'
-                    : 'bg-red-100 text-red-600'
-                }`}
-                onClick={() =>
-                  onUpdateStatus(member.id, member.status === 'active' ? 'inactive' : 'active')
-                }
-              >
-                {member.status === 'active' ? 'Active' : 'Inactive'}
-              </span>
-                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 z-10 w-64">
-                  {member.status === 'active'
-                    ? 'Active: User can log in. Deactivate to block access (e.g., for leave or security).'
-                    : 'Inactive: User cannot log in. Activate to restore access.'}
-                </div>
+              <div className="flex-1 text-sm">
+                {new Date(member.created_at).toLocaleDateString()} {/* Format the date */}
               </div>
               <div className="flex-1 text-sm">
                 {member.role === 'user' ? 'Member' : 'Admin'}

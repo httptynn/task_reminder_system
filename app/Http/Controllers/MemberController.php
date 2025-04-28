@@ -10,59 +10,52 @@ use Illuminate\Support\Facades\Redirect;
 
 class MemberController extends Controller
 {
-    public function index(Request $request)
-    {
-        $perPage = $request->input('per_page', 8);
-        $search = $request->query('search');
+    // MemberController.php
+public function index(Request $request)
+{
+    $perPage = $request->input('per_page', 8);
+    $search = $request->query('search');
 
-        $members = User::query()
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->whereIn('role', ['user', 'admin'])
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->withQueryString()
-            ->through(function ($user) {
-                $latestReason = $user->status === 'inactive'
-                    ? \App\Models\StatusLog::where('user_id', $user->id)
-                        ->where('status', 'inactive')
-                        ->orderBy('changed_at', 'desc')
-                        ->value('reason')
-                    : null;
+    $members = User::query()
+        ->when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+        })
+        ->whereIn('role', ['user', 'admin'])
+        ->orderBy('created_at', 'desc')
+        ->paginate($perPage)
+        ->withQueryString()
+        ->through(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role ?? 'user',
+                'created_at' => $user->created_at->toDateTimeString(), // Include created_at
+            ];
+        });
 
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'status' => $user->status ?? 'active',
-                    'role' => $user->role ?? 'user',
-                    'disable_reason' => $latestReason,
-                ];
-            });
+    $staticReasons = [
+        'leave' => 'Member is on leave',
+        'security' => 'Security concern',
+        'offboarding' => 'Offboarding',
+        'transition' => 'Role/project transition',
+        'other' => 'Other',
+    ];
 
-        $staticReasons = [
-            'leave' => 'Member is on leave',
-            'security' => 'Security concern',
-            'offboarding' => 'Offboarding',
-            'transition' => 'Role/project transition',
-            'other' => 'Other',
-        ];
+    $customReasons = \App\Models\StatusLog::whereNotNull('reason')
+        ->distinct()
+        ->pluck('reason')
+        ->toArray();
 
-        $customReasons = \App\Models\StatusLog::whereNotNull('reason')
-            ->distinct()
-            ->pluck('reason')
-            ->toArray();
+    $statusReasons = array_unique(array_merge(array_values($staticReasons), $customReasons));
 
-        $statusReasons = array_unique(array_merge(array_values($staticReasons), $customReasons));
-
-        return Inertia::render('members', [
-            'members' => $members,
-            'search' => $search,
-            'statusReasons' => $statusReasons,
-        ]);
-    }
+    return Inertia::render('members', [
+        'members' => $members,
+        'search' => $search,
+        'statusReasons' => $statusReasons,
+    ]);
+}
 
     public function store(Request $request)
     {
