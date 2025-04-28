@@ -14,7 +14,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Notification',
-        href: '/members',
+        href: '/notification',
         icon: BellDot,
     },
    

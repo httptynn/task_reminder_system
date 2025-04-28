@@ -65,6 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('user.profile.edit');
 
+
+
     Route::post('user/profile', function (Request $request) {
         $user = auth()->user();
 
@@ -139,6 +141,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ],
         ],
     ]);
+
+    Route::get('/notification', function () {
+        return Inertia::render('notification');
+    })->name('notification');
+
 })->name('task.view');
 
 });
