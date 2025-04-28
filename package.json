@@ -25,9 +25,9 @@
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
-        "@fullNotification/core": "^6.1.17",
-        "@fullNotification/daygrid": "^6.1.17",
-        "@fullNotification/react": "^6.1.17",
+        "@fullcalendar/core": "^6.1.17",
+        "@fullcalendar/daygrid": "^6.1.17",
+        "@fullcalendar/react": "^6.1.17",
         "@headlessui/react": "^2.2.0",
         "@inertiajs/inertia": "^0.11.1",
         "@inertiajs/react": "^2.0.8",
